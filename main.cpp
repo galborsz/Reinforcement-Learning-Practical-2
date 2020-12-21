@@ -80,7 +80,7 @@ struct Game {
 	int score = 0;
 	int highscore = 0;
 	int frames = 0;
-	GameState gameState = waiting;
+	GameState gameState = started;
 	Sprite background[3];
 	Sprite gameover;
 	Text pressC;
@@ -171,10 +171,10 @@ int argmax(map< State, map< int, double > > Q, State state) {
     pick a random action. */
 int greedy_policy(State state) {
 	int action = argmax(Q_TABLE, state);
-	cout << "action: " << action << endl;
+	//cout << "action: " << action << endl;
 
 	double random = (double)rand() / RAND_MAX;
-	cout << "random: " << random << endl;
+	//cout << "random: " << random << endl;
 	if (random <= EPSILON){
 		action = rand() % N_ACTIONS;	
 	}
@@ -187,7 +187,6 @@ State next_position(State state, int action, Flappy flappy) {
 	if (action == 1){
 		flappy.v = -8;
 	}
-
 	state.x_distance = flappy.sprite.getPosition().x;
 	state.y_distance = flappy.sprite.getPosition().y;
 
@@ -325,11 +324,8 @@ int main() {
 	game.highscoreText.setFillColor(Color::White);
 	game.highscoreText.move(30, 80);
 
-	// Initial state
-	State current_state = create_state(flappy.sprite.getPosition().x, flappy.sprite.getPosition().y);
+
 	
-	// Initial action
-	int action = greedy_policy(current_state);
 
 	// main loop
 	while (window.isOpen()) {
@@ -363,7 +359,7 @@ int main() {
 		flappy.sprite.setTexture(textures.flappy[flappy.frame]);
 
 		// move flappy
-		if (game.gameState == started) {
+		/*if (game.gameState == started) {
 			flappy.sprite.move(0, flappy.v);
 			flappy.v += 0.5;
 		}
@@ -371,7 +367,7 @@ int main() {
 		// HERE UPDATE Q VALUES
 		// if hits ceiling, stop ascending
 		// if out of screen, game over
-		/*if (game.gameState == started) {
+		if (game.gameState == started) {
 			if (fy < 0) {
 				flappy.sprite.setPosition(250, 0);
 				flappy.v = 0;
@@ -379,12 +375,7 @@ int main() {
 				flappy.v = 0;
 				game.gameState = gameover;
 				sounds.dishk.play();
-
-				// DETERMINE THE ACTION, a, IN STATE, s, BASED ON Q MATRIX
-				int action = greedy_policy(current_state); 
-
-				// TAKE THE ACTION, a, AND OBSERVE THE OUTCOME STATE, s, AND REWARD, r
-				Pair next = q_learning(current_state, action, flappy);
+				continue;
 			}
 		}*/
 
@@ -402,8 +393,9 @@ int main() {
 			}
 		}
 
+		
 		// generate pipes (tubes)
-		if (game.gameState == started && game.frames % 150 == 0) {
+		if (game.frames % 150 == 0) {
 			int random = rand();
 			int r = random % 275 + 75;
 			int gap = 150;
@@ -446,7 +438,6 @@ int main() {
 			pipes.erase(startitr, enditr);
 		}
 
-		// HERE UPDATE Q VALUES
 		// collision detection
 		if (game.gameState == started) {
 			for (vector<Sprite>::iterator itr = pipes.begin(); itr != pipes.end(); itr++) {
@@ -458,9 +449,11 @@ int main() {
 					py = (*itr).getPosition().y;
 					pw = 52 * (*itr).getScale().x;
 					ph = 320 * (*itr).getScale().y;
+					cout << "here in upper: " << ph << endl;
 				} else {
 					pw = 52 * (*itr).getScale().x;
 					ph = -320 * (*itr).getScale().y;
+					cout << "here in lower: " << ph << endl;
 					px = (*itr).getPosition().x;
 					py = (*itr).getPosition().y - ph;
 				}
@@ -470,24 +463,38 @@ int main() {
 					sounds.dishk.play();
 				}
 			}
-
-			if (fy < 0) {
-				flappy.sprite.setPosition(250, 0);
-				flappy.v = 0;
-			} else if (fy > 600) {
-				flappy.v = 0;
-				game.gameState = gameover;
-				sounds.dishk.play();
-			}
-
-			// DETERMINE THE ACTION, a, IN STATE, s, BASED ON Q MATRIX
-			//action = greedy_policy(current_state); 
-
-			// TAKE THE ACTION, a, AND OBSERVE THE OUTCOME STATE, s, AND REWARD, r
-			Pair next = q_learning(current_state, action, flappy);
-			current_state = next.state;
-			action = next.action;
 		}
+
+		int xpos = flappy.sprite.getPosition().x;
+		int ypos = flappy.sprite.getPosition().y;
+
+		cout << "flappy x: " << xpos << endl;
+		cout << "flappy y: " << ypos << endl;
+
+		float hpipe, xpipe;
+		for (vector<Sprite>::iterator itr = pipes.begin(); itr != pipes.end(); itr++) {
+			hpipe = 320 * (*itr).getScale().y;
+			cout << "pipe h: " << hpipe << endl;
+			xpipe = (*itr).getPosition().x;
+			cout << "pipe x: " << xpipe << endl;
+			if (xpipe > xpos){
+				break;
+			}	
+		}
+	
+		int xdif = xpipe - xpos;
+		int ydif = hpipe - ypos;
+
+		cout << "dif x: " << xdif << endl;
+		cout << "dif y: " << ydif << endl;
+
+		// Initial state
+		State current_state = create_state(xdif, ydif);
+		// Initial action
+		int action = greedy_policy(current_state);
+
+		cout << "state x: " << current_state.x_distance << endl;
+		cout << "state y: " << current_state.y_distance << endl;
 
 		// events
 		Event event;
@@ -499,7 +506,7 @@ int main() {
 			}
 			
 			// flap
-			else if (event.type == Event::KeyPressed &&
+			/*else if (event.type == Event::KeyPressed &&
 					   event.key.code == Keyboard::Space) {
 				if (game.gameState == waiting) {
 					game.gameState = started;
@@ -511,7 +518,7 @@ int main() {
 				}
 
 			// restart
-			} else if (event.type == Event::KeyPressed &&
+			}*/ else if (event.type == Event::KeyPressed &&
 					   event.key.code == Keyboard::C &&
 					   game.gameState == gameover) {
 				game.gameState = waiting;
@@ -540,16 +547,25 @@ int main() {
 
 		// gameover. press c to continue
 		if (game.gameState == gameover) {
-			window.draw(game.gameover);
-
-			if (game.frames % 60 < 30) {
+			//window.draw(game.gameover);
+			continue;
+			/*if (game.frames % 60 < 30) {
 				window.draw(game.pressC);
-			}
+			}*/
 		}
 		window.display();
 
 		// dont forget to update total frames
 		game.frames++;
+
+		// DETERMINE THE ACTION, a, IN STATE, s, BASED ON Q MATRIX
+		//action = greedy_policy(current_state); 
+
+
+		// TAKE THE ACTION, a, AND OBSERVE THE OUTCOME STATE, s, AND REWARD, r
+		Pair next = q_learning(current_state, action, flappy);
+		current_state = next.state;
+		action = next.action;
 	}
 
 	return 0;
