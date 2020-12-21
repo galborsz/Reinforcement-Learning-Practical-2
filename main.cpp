@@ -12,14 +12,32 @@
 using namespace sf;
 using namespace std;
 
-void escriure(vector<int> vec) {
-    for (double e : vec) {
-        cout << " " << e;
-    }
-    cout << endl;
-}
+//	Define parameters
+const double GAMMA = 1;
+const double ALPHA = 0.5;
+const double EPSILON = 0.1;
+const double N_EPISODES = 2000;
+const int N_ACTIONS = 2;
+const int N_STATES = 960000;
+const int X_MAX = 800;
+const int Y_MAX = 600;
+const int LIFE_MAX = 2;
 
-int num_range_first(){
+struct Pair {
+     int value1;
+     int value2;
+};
+
+struct State {
+    int x_distance;
+    int y_distance;
+	int life;
+	bool operator < (const State& state) const{
+       return tie(x_distance, y_distance, life) < tie(state.x_distance, state.y_distance, state.life); 
+    }
+};
+
+/*int num_range_first(){
 	static int i = 0;
     return i++;
 }
@@ -27,13 +45,143 @@ int num_range_first(){
 int num_range_second(){
 	static int i = 0;
     return i++;
+}*/
+
+// Define states
+State create_state(int xdif, int ydif, int life){
+	State state;
+	state.x_distance = xdif;
+	state.y_distance = ydif;
+	state.life = life;
+    return state;
+}
+/*vector<int> X_DISTANCE(1000);
+generate(X_DISTANCE.begin(), X_DISTANCE.end(), num_range_first);
+vector<int> Y_DISTANCE(150);
+generate(Y_DISTANCE.begin(), Y_DISTANCE.end(), num_range_second);
+vector<int> LIFE = {0, 1};*/
+//int N_STATES = X_DISTANCE.size() * Y_DISTANCE.size() * LIFE.size();
+
+// Define actions
+//vector<int> ACTIONS = {0, 1}; //where 0 represents "Do nothing" and 1 represents "Click"
+
+map< State, map< int, double > >  initialize_map() {
+	map< State, map< int, double > > m;
+	for(int x=0; x<X_MAX; x++){
+		for(int y=0; y<Y_MAX; y++){
+			for(int l=0; l<LIFE_MAX; l++) {
+				State state = create_state(x, y, l);
+				for(int a=0; a<N_ACTIONS; a++) {
+					m[state][a] = 0;
+				}
+			}
+		}
+	}
+	
+	return m;
 }
 
-//	Define parameters
-const double GAMMA = 1;
-const double ALPHA = 0.5;
-const double EPSILON = 0.1;
-const double N_EPISODES = 2000;
+// Define action-value table as a map (key string: state, key int: action)
+map< State, map< int, double > > Q_TABLE = initialize_map();
+
+void write_map(map< State, map< int, double > > m) {
+	for(int x=0; x<X_MAX; x++){
+		for(int y=0; y<Y_MAX; y++){
+			for(int l=0; l<LIFE_MAX; l++) {
+				State state = create_state(x, y, l);
+				for(int a=0; a<N_ACTIONS; a++) {
+					cout << "map: " << m[state][a] << endl;
+				}
+			}
+		}
+	}
+}
+
+void write(vector<int> vec) {
+    for (double e : vec) {
+        cout << " " << e;
+    }
+    cout << endl;
+}
+
+int argmax(vector<double> Q) {
+    int imax = 0;
+    double max = -1;
+    for (int i=0; i<Q.size(); ++i) {
+        if (Q[i] > max) {
+            max = Q[i];
+            imax = i;
+    }   }
+    return imax;
+}
+
+// ALGORITHMS
+
+/* Performs greedy policy. With prob epsilon pick action
+    belonging to maximum action-value. With prob 1-epsilon
+    pick a random action. */
+/*int greedy_policy(string state, vector<vector<double> > q_table) {
+	int action = argmax(q_table[state]);
+	cout << "action: " << action << endl;
+
+	double random = (double)rand() / RAND_MAX;
+	cout << "random: " << random << endl;
+	if (random < EPSILON){
+		action = rand() % N_ACTIONS;	
+	}
+
+	return action;
+}*/
+
+// Computes next state and reward
+/*void next_position(string state, int action) {
+	// x is the row number and y is the column number
+	(ax, ay) = ACTIONS[action];
+
+	row = max(0, x + ax + self.WIND_V[y])
+	row = min(self.N_ROWS-1, row)
+	col = max(0, y + ay + self.WIND_H[x])
+	col = min(self.N_COLUMNS-1, col)
+	
+	if (row, col) in self.FORBIDEN_CELLS: # Si anem a una cel·la prohibida, ens quedem on estàvem
+		next_state = (x, y)
+	else: 
+		next_state = (row, col)
+
+	next_state = self.get_state(next_state)
+
+	if next_state == self.FIN_STATE:
+		return next_state, 0
+	return next_state, -1
+
+}*/
+
+// Q-learning always pick next_action with maximum action-value (q-value)
+/*Pair q_learning(string state, int action){
+	// Choose A from S
+	int next_action = greedy_policy(state);
+
+	// Take action A, observe R, S'
+	Pair next_position = next_position(state, next_action);
+	int next_state = next_position->value1;
+	int reward = next_position->value2;
+
+
+	// max Q(S',a) for all a
+	vector<double> q;
+	for (int a : N_ACTIONS) {
+		q.push_back(Q_TABLE[next_state][a]);
+	}
+	double maxQ = argmax(q)
+
+	// Update Q(S,A)
+	Q_TABLE[state][next_action] = Q_TABLE[state][next_action] + ALPHA * (reward + GAMMA * maxQ - Q_TABLE[state][next_action]);
+
+	// return next state and next action
+	Pair next = {next_state, next_action}
+
+	return next;
+}*/
 
 
 
@@ -45,19 +193,19 @@ bool collides(float x1, float y1, float w1, float h1, float x2, float y2, float 
 	return false;
 }
 
+int choose_action() {
+	double r = (double)rand() / RAND_MAX;
+    double p = 0.5;
+    if (r <= p) return 1;
+    return 0;
+}
+
 int main() {
 
-	// 	Define states
-	vector<int> X_DISTANCE(1000);
-	generate(X_DISTANCE.begin(), X_DISTANCE.end(), num_range_first);
-	vector<int> Y_DISTANCE(150);
-	generate(Y_DISTANCE.begin(), Y_DISTANCE.end(), num_range_second);
-	vector<int> LIFE = {0, 1};
-	int N_STATES = X_DISTANCE.size() * Y_DISTANCE.size() * LIFE.size();
+	/*Pair xy = get_XY("12_13_0");
+	cout << "value x: " << xy.value1 << endl;
+	cout << "value y: " << xy.value2 << endl;*/
 
-	// Define actions
-	vector<int> ACTIONS = {0, 1} //where 0 represents "Do nothing" and 1 represents "Click"
-	
 	// create the window and set general settings. Plant the seeds
 	RenderWindow window(VideoMode(1000, 600), "Floppy Bird");
 	window.setFramerateLimit(60);
@@ -164,8 +312,9 @@ int main() {
 	game.highscoreText.setFillColor(Color::White);
 	game.highscoreText.move(30, 80);
 
-	//	Define action-value function
-
+	// Initial state
+	State current_state = create_state(flappy.sprite.getPosition().x, flappy.sprite.getPosition().y, 1);
+	
 	// main loop
 	while (window.isOpen()) {
 
@@ -182,6 +331,12 @@ int main() {
 		float fy = flappy.sprite.getPosition().y;
 		float fw = 34 * flappy.sprite.getScale().x;
 		float fh = 24 * flappy.sprite.getScale().y;
+
+		// DETERMINE THE ACTION, a, IN STATE, s, BASED ON Q MATRIX
+
+		// int a = greedy_policy(state, Q_TABLE); 
+
+		// TAKE THE ACTION, a, AND OBSERVE THE OUTCOME STATE, s, AND REWARD, r
 
 		// flap the wings if playing
 		if (game.gameState == waiting || game.gameState == started) {
@@ -203,6 +358,7 @@ int main() {
 			flappy.v += 0.5;
 		}
 
+		// HERE UPDATE Q VALUES
 		// if hits ceiling, stop ascending
 		// if out of screen, game over
 		if (game.gameState == started) {
@@ -233,20 +389,19 @@ int main() {
 		// generate pipes (tubes)
 		if (game.gameState == started && game.frames % 150 == 0) {
 			int random = rand();
-			cout << random << endl;
 			int r = random % 275 + 75;
 			int gap = 150;
 
 			// lower pipe
 			Sprite pipeL;
 			pipeL.setTexture(textures.pipe);
-			pipeL.setPosition(1000, r + gap);
+			pipeL.setPosition(800, r + gap);
 			pipeL.setScale(2, 2);
 
 			// upper pipe
 			Sprite pipeU;
 			pipeU.setTexture(textures.pipe);
-			pipeU.setPosition(1000, r);
+			pipeU.setPosition(800, r);
 			pipeU.setScale(2, -2);
 
 			// push to the array
@@ -275,6 +430,7 @@ int main() {
 			pipes.erase(startitr, enditr);
 		}
 
+		// HERE UPDATE Q VALUES
 		// collision detection
 		if (game.gameState == started) {
 			for (vector<Sprite>::iterator itr = pipes.begin(); itr != pipes.end(); itr++) {
