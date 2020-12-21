@@ -23,19 +23,71 @@ const int X_MAX = 800;
 const int Y_MAX = 600;
 const int LIFE_MAX = 2;
 
-struct Pair {
-     int value1;
-     int value2;
-};
-
 struct State {
     int x_distance;
     int y_distance;
-	int life;
 	bool operator < (const State& state) const{
-       return tie(x_distance, y_distance, life) < tie(state.x_distance, state.y_distance, state.life); 
+       return tie(x_distance, y_distance) < tie(state.x_distance, state.y_distance); 
     }
 };
+
+struct Pair {
+     State state;
+     int action;
+};
+
+// flappy singleton struct.
+// v = vertical speed
+// frame = which texture to print
+struct Flappy {
+	double v = 0;
+	int frame = 0;
+	Sprite sprite;
+} flappy;
+
+// all sounds and their buffers will rest in this singleton struct
+struct Sounds {
+	SoundBuffer chingBuffer;
+	SoundBuffer hopBuffer;
+	SoundBuffer dishkBuffer;
+	Sound ching;
+	Sound hop;
+	Sound dishk;
+} sounds;
+
+// all textures remain in here. Flappy has 3 textures, which will repeadetly draw, creating the illusion of flying.
+struct Textures {
+	Texture flappy[3];
+	Texture pipe;
+	Texture background;
+	Texture gameover;
+} textures;
+
+// resizable array of sprites representing pipes
+vector<Sprite> pipes;
+
+// waiting = game not started yet
+// started = playing
+// gameover = game is over
+enum GameState { waiting,
+					started,
+					gameover };
+
+
+// game settings in singleton game struct
+// frames counts total frames passed since the beginning of time
+struct Game {
+	int score = 0;
+	int highscore = 0;
+	int frames = 0;
+	GameState gameState = waiting;
+	Sprite background[3];
+	Sprite gameover;
+	Text pressC;
+	Text scoreText;
+	Text highscoreText;
+	Font font;
+} game;
 
 /*int num_range_first(){
 	static int i = 0;
@@ -48,11 +100,10 @@ int num_range_second(){
 }*/
 
 // Define states
-State create_state(int xdif, int ydif, int life){
+State create_state(int xdif, int ydif){
 	State state;
 	state.x_distance = xdif;
 	state.y_distance = ydif;
-	state.life = life;
     return state;
 }
 /*vector<int> X_DISTANCE(1000);
@@ -69,11 +120,9 @@ map< State, map< int, double > >  initialize_map() {
 	map< State, map< int, double > > m;
 	for(int x=0; x<X_MAX; x++){
 		for(int y=0; y<Y_MAX; y++){
-			for(int l=0; l<LIFE_MAX; l++) {
-				State state = create_state(x, y, l);
-				for(int a=0; a<N_ACTIONS; a++) {
-					m[state][a] = 0;
-				}
+			State state = create_state(x, y);
+			for(int a=0; a<N_ACTIONS; a++) {
+				m[state][a] = 0;
 			}
 		}
 	}
@@ -87,11 +136,9 @@ map< State, map< int, double > > Q_TABLE = initialize_map();
 void write_map(map< State, map< int, double > > m) {
 	for(int x=0; x<X_MAX; x++){
 		for(int y=0; y<Y_MAX; y++){
-			for(int l=0; l<LIFE_MAX; l++) {
-				State state = create_state(x, y, l);
-				for(int a=0; a<N_ACTIONS; a++) {
-					cout << "map: " << m[state][a] << endl;
-				}
+			State state = create_state(x, y);
+			for(int a=0; a<N_ACTIONS; a++) {
+				cout << "map: " << m[state][a] << endl;
 			}
 		}
 	}
@@ -104,14 +151,16 @@ void write(vector<int> vec) {
     cout << endl;
 }
 
-int argmax(vector<double> Q) {
+int argmax(map< State, map< int, double > > Q, State state) {
     int imax = 0;
-    double max = -1;
-    for (int i=0; i<Q.size(); ++i) {
-        if (Q[i] > max) {
-            max = Q[i];
-            imax = i;
-    }   }
+	double max = 0;
+	for(int a=0; a<N_ACTIONS; a++) {
+		if (Q[state][a] > max){
+			max = Q[state][a];
+			imax = a;
+		}
+	}
+
     return imax;
 }
 
@@ -120,70 +169,30 @@ int argmax(vector<double> Q) {
 /* Performs greedy policy. With prob epsilon pick action
     belonging to maximum action-value. With prob 1-epsilon
     pick a random action. */
-/*int greedy_policy(string state, vector<vector<double> > q_table) {
-	int action = argmax(q_table[state]);
+int greedy_policy(State state) {
+	int action = argmax(Q_TABLE, state);
 	cout << "action: " << action << endl;
 
 	double random = (double)rand() / RAND_MAX;
 	cout << "random: " << random << endl;
-	if (random < EPSILON){
+	if (random <= EPSILON){
 		action = rand() % N_ACTIONS;	
 	}
 
 	return action;
-}*/
+}
 
 // Computes next state and reward
-/*void next_position(string state, int action) {
-	// x is the row number and y is the column number
-	(ax, ay) = ACTIONS[action];
-
-	row = max(0, x + ax + self.WIND_V[y])
-	row = min(self.N_ROWS-1, row)
-	col = max(0, y + ay + self.WIND_H[x])
-	col = min(self.N_COLUMNS-1, col)
-	
-	if (row, col) in self.FORBIDEN_CELLS: # Si anem a una cel·la prohibida, ens quedem on estàvem
-		next_state = (x, y)
-	else: 
-		next_state = (row, col)
-
-	next_state = self.get_state(next_state)
-
-	if next_state == self.FIN_STATE:
-		return next_state, 0
-	return next_state, -1
-
-}*/
-
-// Q-learning always pick next_action with maximum action-value (q-value)
-/*Pair q_learning(string state, int action){
-	// Choose A from S
-	int next_action = greedy_policy(state);
-
-	// Take action A, observe R, S'
-	Pair next_position = next_position(state, next_action);
-	int next_state = next_position->value1;
-	int reward = next_position->value2;
-
-
-	// max Q(S',a) for all a
-	vector<double> q;
-	for (int a : N_ACTIONS) {
-		q.push_back(Q_TABLE[next_state][a]);
+State next_position(State state, int action, Flappy flappy) {
+	if (action == 1){
+		flappy.v = -8;
 	}
-	double maxQ = argmax(q)
 
-	// Update Q(S,A)
-	Q_TABLE[state][next_action] = Q_TABLE[state][next_action] + ALPHA * (reward + GAMMA * maxQ - Q_TABLE[state][next_action]);
+	state.x_distance = flappy.sprite.getPosition().x;
+	state.y_distance = flappy.sprite.getPosition().y;
 
-	// return next state and next action
-	Pair next = {next_state, next_action}
-
-	return next;
-}*/
-
-
+	return state;
+}
 
 // rect rect collision detection helper function
 bool collides(float x1, float y1, float w1, float h1, float x2, float y2, float w2, float h2) {
@@ -191,6 +200,63 @@ bool collides(float x1, float y1, float w1, float h1, float x2, float y2, float 
 		return true;
 	}
 	return false;
+}
+
+bool check_collides(Flappy flappy) {
+	for (vector<Sprite>::iterator itr = pipes.begin(); itr != pipes.end(); itr++) {
+
+		float px, py, pw, ph;
+
+		if ((*itr).getScale().y > 0) {
+			px = (*itr).getPosition().x;
+			py = (*itr).getPosition().y;
+			pw = 52 * (*itr).getScale().x;
+			ph = 320 * (*itr).getScale().y;
+		} else {
+			pw = 52 * (*itr).getScale().x;
+			ph = -320 * (*itr).getScale().y;
+			px = (*itr).getPosition().x;
+			py = (*itr).getPosition().y - ph;
+		}
+
+		float fx = flappy.sprite.getPosition().x;
+		float fy = flappy.sprite.getPosition().y;
+		float fw = 34 * flappy.sprite.getScale().x;
+		float fh = 24 * flappy.sprite.getScale().y;
+
+
+		if (collides(fx, fy, fw, fh, px, py, pw, ph)) {
+			game.gameState = gameover;
+			sounds.dishk.play();
+			return 1;
+		}
+	}
+	return 0;
+}
+
+// Q-learning always pick next_action with maximum action-value (q-value)
+Pair q_learning(State state, int action, Flappy flappy){
+	// Choose A from S
+	int next_action = greedy_policy(state);
+
+	// Take action A, observe R, S'
+	State next_state = next_position(state, next_action, flappy);
+	int reward;
+	if (check_collides(flappy) == 0) reward = 15;
+	else reward = -1000;
+
+	// max Q(S',a) for all a
+	double maxQ = argmax(Q_TABLE, next_state);
+
+	// Update Q(S,A)
+	Q_TABLE[state][next_action] = Q_TABLE[state][next_action] + ALPHA * (reward + GAMMA * maxQ - Q_TABLE[state][next_action]);
+
+	// return next state and next action
+	Pair next;
+	next.state = next_state;
+	next.action = next_action;
+
+	return next;
 }
 
 int choose_action() {
@@ -211,16 +277,6 @@ int main() {
 	window.setFramerateLimit(60);
 	window.setKeyRepeatEnabled(false);
 
-	// all sounds and their buffers will rest in this singleton struct
-	struct Sounds {
-		SoundBuffer chingBuffer;
-		SoundBuffer hopBuffer;
-		SoundBuffer dishkBuffer;
-		Sound ching;
-		Sound hop;
-		Sound dishk;
-	} sounds;
-
 	// load sounds
 	sounds.chingBuffer.loadFromFile("./audio/score.wav");
 	sounds.hopBuffer.loadFromFile("./audio/flap.wav");
@@ -228,14 +284,6 @@ int main() {
 	sounds.ching.setBuffer(sounds.chingBuffer);
 	sounds.hop.setBuffer(sounds.hopBuffer);
 	sounds.dishk.setBuffer(sounds.dishkBuffer);
-
-	// all textures remain in here. Flappy has 3 textures, which will repeadetly draw, creating the illusion of flying.
-	struct Textures {
-		Texture flappy[3];
-		Texture pipe;
-		Texture background;
-		Texture gameover;
-	} textures;
 
 	// load textures
 	textures.background.loadFromFile("./images/background.png");
@@ -245,44 +293,9 @@ int main() {
 	textures.flappy[1].loadFromFile("./images/flappy2.png");
 	textures.flappy[2].loadFromFile("./images/flappy3.png");
 
-	// flappy singleton struct.
-	// v = vertical speed
-	// frame = which texture to print
-	struct Flappy {
-		double v = 0;
-		int frame = 0;
-		Sprite sprite;
-	} flappy;
-
 	// initial position, scale
 	flappy.sprite.setPosition(250, 300);
 	flappy.sprite.setScale(2, 2);
-
-	// resizable array of sprites representing pipes
-	vector<Sprite> pipes;
-
-	// waiting = game not started yet
-	// started = playing
-	// gameover = game is over
-	enum GameState { waiting,
-					 started,
-					 gameover };
-
-
-	// game settings in singleton game struct
-	// frames counts total frames passed since the beginning of time
-	struct Game {
-		int score = 0;
-		int highscore = 0;
-		int frames = 0;
-		GameState gameState = waiting;
-		Sprite background[3];
-		Sprite gameover;
-		Text pressC;
-		Text scoreText;
-		Text highscoreText;
-		Font font;
-	} game;
 
 	// load font, set positions, scales etc
 	game.font.loadFromFile("./fonts/flappy.ttf");
@@ -313,8 +326,11 @@ int main() {
 	game.highscoreText.move(30, 80);
 
 	// Initial state
-	State current_state = create_state(flappy.sprite.getPosition().x, flappy.sprite.getPosition().y, 1);
+	State current_state = create_state(flappy.sprite.getPosition().x, flappy.sprite.getPosition().y);
 	
+	// Initial action
+	int action = greedy_policy(current_state);
+
 	// main loop
 	while (window.isOpen()) {
 
@@ -331,12 +347,6 @@ int main() {
 		float fy = flappy.sprite.getPosition().y;
 		float fw = 34 * flappy.sprite.getScale().x;
 		float fh = 24 * flappy.sprite.getScale().y;
-
-		// DETERMINE THE ACTION, a, IN STATE, s, BASED ON Q MATRIX
-
-		// int a = greedy_policy(state, Q_TABLE); 
-
-		// TAKE THE ACTION, a, AND OBSERVE THE OUTCOME STATE, s, AND REWARD, r
 
 		// flap the wings if playing
 		if (game.gameState == waiting || game.gameState == started) {
@@ -361,7 +371,7 @@ int main() {
 		// HERE UPDATE Q VALUES
 		// if hits ceiling, stop ascending
 		// if out of screen, game over
-		if (game.gameState == started) {
+		/*if (game.gameState == started) {
 			if (fy < 0) {
 				flappy.sprite.setPosition(250, 0);
 				flappy.v = 0;
@@ -369,8 +379,14 @@ int main() {
 				flappy.v = 0;
 				game.gameState = gameover;
 				sounds.dishk.play();
+
+				// DETERMINE THE ACTION, a, IN STATE, s, BASED ON Q MATRIX
+				int action = greedy_policy(current_state); 
+
+				// TAKE THE ACTION, a, AND OBSERVE THE OUTCOME STATE, s, AND REWARD, r
+				Pair next = q_learning(current_state, action, flappy);
 			}
-		}
+		}*/
 
 		// count the score
 		for (vector<Sprite>::iterator itr = pipes.begin(); itr != pipes.end(); itr++) {
@@ -454,6 +470,23 @@ int main() {
 					sounds.dishk.play();
 				}
 			}
+
+			if (fy < 0) {
+				flappy.sprite.setPosition(250, 0);
+				flappy.v = 0;
+			} else if (fy > 600) {
+				flappy.v = 0;
+				game.gameState = gameover;
+				sounds.dishk.play();
+			}
+
+			// DETERMINE THE ACTION, a, IN STATE, s, BASED ON Q MATRIX
+			//action = greedy_policy(current_state); 
+
+			// TAKE THE ACTION, a, AND OBSERVE THE OUTCOME STATE, s, AND REWARD, r
+			Pair next = q_learning(current_state, action, flappy);
+			current_state = next.state;
+			action = next.action;
 		}
 
 		// events
