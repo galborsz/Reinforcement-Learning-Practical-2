@@ -187,10 +187,29 @@ State next_position(State state, int action, Flappy flappy) {
 	if (action == 1){
 		flappy.v = -8;
 	}
-	state.x_distance = flappy.sprite.getPosition().x;
-	state.y_distance = flappy.sprite.getPosition().y;
+	int xpos = flappy.sprite.getPosition().x;
+	int ypos = flappy.sprite.getPosition().y;
 
-	return state;
+	cout << "flappy x: " << xpos << endl;
+	cout << "flappy y: " << ypos << endl;
+
+	float hpipe, xpipe;
+	for (vector<Sprite>::iterator itr = pipes.begin(); itr != pipes.end(); itr++) {
+		hpipe = 320 * (*itr).getScale().y;
+		//cout << "pipe h: " << hpipe << endl;
+		xpipe = (*itr).getPosition().x;
+		//cout << "pipe x: " << xpipe << endl;
+		if (xpipe > xpos){
+			break;
+		}	
+	}
+
+	int xdif = xpipe - xpos;
+	int ydif = hpipe - ypos;
+
+	State next_state = create_state(xdif, ydif);
+
+	return next_state;
 }
 
 // rect rect collision detection helper function
@@ -265,33 +284,7 @@ int choose_action() {
     return 0;
 }
 
-int main() {
-
-	/*Pair xy = get_XY("12_13_0");
-	cout << "value x: " << xy.value1 << endl;
-	cout << "value y: " << xy.value2 << endl;*/
-
-	// create the window and set general settings. Plant the seeds
-	RenderWindow window(VideoMode(1000, 600), "Floppy Bird");
-	window.setFramerateLimit(60);
-	window.setKeyRepeatEnabled(false);
-
-	// load sounds
-	sounds.chingBuffer.loadFromFile("./audio/score.wav");
-	sounds.hopBuffer.loadFromFile("./audio/flap.wav");
-	sounds.dishkBuffer.loadFromFile("./audio/crash.wav");
-	sounds.ching.setBuffer(sounds.chingBuffer);
-	sounds.hop.setBuffer(sounds.hopBuffer);
-	sounds.dishk.setBuffer(sounds.dishkBuffer);
-
-	// load textures
-	textures.background.loadFromFile("./images/background.png");
-	textures.pipe.loadFromFile("./images/pipe.png");
-	textures.gameover.loadFromFile("./images/gameover.png");
-	textures.flappy[0].loadFromFile("./images/flappy1.png");
-	textures.flappy[1].loadFromFile("./images/flappy2.png");
-	textures.flappy[2].loadFromFile("./images/flappy3.png");
-
+void restart(){
 	// initial position, scale
 	flappy.sprite.setPosition(250, 300);
 	flappy.sprite.setScale(2, 2);
@@ -323,12 +316,46 @@ int main() {
 	game.highscoreText.setFont(game.font);
 	game.highscoreText.setFillColor(Color::White);
 	game.highscoreText.move(30, 80);
+	game.frames = 0;
+}
 
+int main() {
 
-	
+	/*Pair xy = get_XY("12_13_0");
+	cout << "value x: " << xy.value1 << endl;
+	cout << "value y: " << xy.value2 << endl;*/
+
+	// create the window and set general settings. Plant the seeds
+	RenderWindow window(VideoMode(1000, 600), "Floppy Bird");
+	window.setFramerateLimit(60);
+	window.setKeyRepeatEnabled(false);
+
+	// load sounds
+	sounds.chingBuffer.loadFromFile("./audio/score.wav");
+	sounds.hopBuffer.loadFromFile("./audio/flap.wav");
+	sounds.dishkBuffer.loadFromFile("./audio/crash.wav");
+	sounds.ching.setBuffer(sounds.chingBuffer);
+	sounds.hop.setBuffer(sounds.hopBuffer);
+	sounds.dishk.setBuffer(sounds.dishkBuffer);
+
+	// load textures
+	textures.background.loadFromFile("./images/background.png");
+	textures.pipe.loadFromFile("./images/pipe.png");
+	textures.gameover.loadFromFile("./images/gameover.png");
+	textures.flappy[0].loadFromFile("./images/flappy1.png");
+	textures.flappy[1].loadFromFile("./images/flappy2.png");
+	textures.flappy[2].loadFromFile("./images/flappy3.png");
+
+	restart();
 
 	// main loop
 	while (window.isOpen()) {
+
+		if (game.gameState == gameover) {
+			game.gameState = started;
+			pipes.clear();
+			restart();
+		}
 
 		// Set random seed 
 		srand(100);
@@ -359,12 +386,11 @@ int main() {
 		flappy.sprite.setTexture(textures.flappy[flappy.frame]);
 
 		// move flappy
-		/*if (game.gameState == started) {
+		if (game.gameState == started) {
 			flappy.sprite.move(0, flappy.v);
 			flappy.v += 0.5;
 		}
 
-		// HERE UPDATE Q VALUES
 		// if hits ceiling, stop ascending
 		// if out of screen, game over
 		if (game.gameState == started) {
@@ -377,7 +403,7 @@ int main() {
 				sounds.dishk.play();
 				continue;
 			}
-		}*/
+		}
 
 		// count the score
 		for (vector<Sprite>::iterator itr = pipes.begin(); itr != pipes.end(); itr++) {
@@ -545,6 +571,8 @@ int main() {
 		window.draw(game.scoreText);
 		window.draw(game.highscoreText);
 
+		window.display();
+
 		// gameover. press c to continue
 		if (game.gameState == gameover) {
 			//window.draw(game.gameover);
@@ -553,7 +581,6 @@ int main() {
 				window.draw(game.pressC);
 			}*/
 		}
-		window.display();
 
 		// dont forget to update total frames
 		game.frames++;
