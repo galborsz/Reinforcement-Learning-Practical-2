@@ -497,10 +497,12 @@ int main() {
 		cout << "flappy x: " << xpos << endl;
 		cout << "flappy y: " << ypos << endl;
 
-		float hpipe, xpipe;
+		float hpipe, xpipe, ypipe;
 		for (vector<Sprite>::iterator itr = pipes.begin(); itr != pipes.end(); itr++) {
-			hpipe = 320 * (*itr).getScale().y;
-			cout << "pipe h: " << hpipe << endl;
+			//hpipe = 320 * (*itr).getScale().y;
+			//cout << "pipe height: " << hpipe << endl;
+			ypipe = (*itr).getPosition().y;
+			cout << "pipe y: " << ypipe << endl;
 			xpipe = (*itr).getPosition().x;
 			cout << "pipe x: " << xpipe << endl;
 			if (xpipe > xpos){
@@ -509,7 +511,7 @@ int main() {
 		}
 	
 		int xdif = xpipe - xpos;
-		int ydif = hpipe - ypos;
+		int ydif = ypipe - ypos;
 
 		cout << "dif x: " << xdif << endl;
 		cout << "dif y: " << ydif << endl;
@@ -519,8 +521,8 @@ int main() {
 		// Initial action
 		int action = greedy_policy(current_state);
 
-		cout << "state x: " << current_state.x_distance << endl;
-		cout << "state y: " << current_state.y_distance << endl;
+		//cout << "state x: " << current_state.x_distance << endl;
+		//cout << "state y: " << current_state.y_distance << endl;
 
 		// events
 		Event event;
