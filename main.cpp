@@ -151,12 +151,12 @@ void write(vector<int> vec) {
     cout << endl;
 }
 
-int argmax(map< State, map< int, double > > Q, State state) {
+int argmax(State state) {
     int imax = 0;
 	double max = 0;
 	for(int a=0; a<N_ACTIONS; a++) {
-		if (Q[state][a] > max){
-			max = Q[state][a];
+		if (Q_TABLE[state][a] > max){
+			max = Q_TABLE[state][a];
 			imax = a;
 		}
 	}
@@ -170,42 +170,40 @@ int argmax(map< State, map< int, double > > Q, State state) {
     belonging to maximum action-value. With prob 1-epsilon
     pick a random action. */
 int greedy_policy(State state) {
-	int action = argmax(Q_TABLE, state);
-	//cout << "action: " << action << endl;
-
+	int action;
+	
 	double random = (double)rand() / RAND_MAX;
 	//cout << "random: " << random << endl;
 	if (random <= EPSILON){
 		action = rand() % N_ACTIONS;	
+	} else {
+		action = argmax(state);
 	}
+	//cout << "action: " << action << endl;
 
 	return action;
 }
 
 // Computes next state and reward
-State next_position(State state, int action, Flappy flappy) {
+State next_position(State state, int action) {
 	if (action == 1){
 		flappy.v = -8;
 	}
+
 	int xpos = flappy.sprite.getPosition().x;
 	int ypos = flappy.sprite.getPosition().y;
 
-	cout << "flappy x: " << xpos << endl;
-	cout << "flappy y: " << ypos << endl;
-
-	float hpipe, xpipe;
+	float hpipe, xpipe, ypipe;
 	for (vector<Sprite>::iterator itr = pipes.begin(); itr != pipes.end(); itr++) {
-		hpipe = 320 * (*itr).getScale().y;
-		//cout << "pipe h: " << hpipe << endl;
+		ypipe = (*itr).getPosition().y;
 		xpipe = (*itr).getPosition().x;
-		//cout << "pipe x: " << xpipe << endl;
 		if (xpipe > xpos){
 			break;
 		}	
 	}
 
 	int xdif = xpipe - xpos;
-	int ydif = hpipe - ypos;
+	int ydif = ypipe - ypos;
 
 	State next_state = create_state(xdif, ydif);
 
@@ -220,7 +218,7 @@ bool collides(float x1, float y1, float w1, float h1, float x2, float y2, float 
 	return false;
 }
 
-bool check_collides(Flappy flappy) {
+bool check_collides() {
 	for (vector<Sprite>::iterator itr = pipes.begin(); itr != pipes.end(); itr++) {
 
 		float px, py, pw, ph;
@@ -245,7 +243,7 @@ bool check_collides(Flappy flappy) {
 
 		if (collides(fx, fy, fw, fh, px, py, pw, ph)) {
 			game.gameState = gameover;
-			sounds.dishk.play();
+			//sounds.dishk.play();
 			return 1;
 		}
 	}
@@ -253,18 +251,18 @@ bool check_collides(Flappy flappy) {
 }
 
 // Q-learning always pick next_action with maximum action-value (q-value)
-Pair q_learning(State state, int action, Flappy flappy){
+Pair q_learning(State state, int action){
 	// Choose A from S
 	int next_action = greedy_policy(state);
 
 	// Take action A, observe R, S'
-	State next_state = next_position(state, next_action, flappy);
+	State next_state = next_position(state, next_action);
 	int reward;
-	if (check_collides(flappy) == 0) reward = 15;
+	if (check_collides() == 0) reward = 15;
 	else reward = -1000;
 
 	// max Q(S',a) for all a
-	double maxQ = argmax(Q_TABLE, next_state);
+	double maxQ = argmax(next_state);
 
 	// Update Q(S,A)
 	Q_TABLE[state][next_action] = Q_TABLE[state][next_action] + ALPHA * (reward + GAMMA * maxQ - Q_TABLE[state][next_action]);
@@ -348,6 +346,14 @@ int main() {
 
 	restart();
 
+	// Initial state
+	State current_state = create_state(547, 100);
+	// Initial action
+	int action = greedy_policy(current_state);
+
+	// Set random seed 
+	srand(100);
+
 	// main loop
 	while (window.isOpen()) {
 
@@ -356,9 +362,6 @@ int main() {
 			pipes.clear();
 			restart();
 		}
-
-		// Set random seed 
-		srand(100);
 
 		// update score
 		flappy.sprite.setTexture(textures.flappy[1]);
@@ -400,7 +403,7 @@ int main() {
 			} else if (fy > 600) {
 				flappy.v = 0;
 				game.gameState = gameover;
-				sounds.dishk.play();
+				//sounds.dishk.play();
 				continue;
 			}
 		}
@@ -422,8 +425,9 @@ int main() {
 		
 		// generate pipes (tubes)
 		if (game.frames % 150 == 0) {
-			int random = rand();
-			int r = random % 275 + 75;
+			//int random = rand();
+			//int r = random % 275 + 75;
+			int r = 300;
 			int gap = 150;
 
 			// lower pipe
@@ -475,18 +479,16 @@ int main() {
 					py = (*itr).getPosition().y;
 					pw = 52 * (*itr).getScale().x;
 					ph = 320 * (*itr).getScale().y;
-					cout << "here in upper: " << ph << endl;
 				} else {
 					pw = 52 * (*itr).getScale().x;
 					ph = -320 * (*itr).getScale().y;
-					cout << "here in lower: " << ph << endl;
 					px = (*itr).getPosition().x;
 					py = (*itr).getPosition().y - ph;
 				}
 
 				if (collides(fx, fy, fw, fh, px, py, pw, ph)) {
 					game.gameState = gameover;
-					sounds.dishk.play();
+					//sounds.dishk.play();
 				}
 			}
 		}
@@ -494,17 +496,17 @@ int main() {
 		int xpos = flappy.sprite.getPosition().x;
 		int ypos = flappy.sprite.getPosition().y;
 
-		cout << "flappy x: " << xpos << endl;
-		cout << "flappy y: " << ypos << endl;
+		//cout << "flappy x: " << xpos << endl;
+		//cout << "flappy y: " << ypos << endl;
 
 		float hpipe, xpipe, ypipe;
 		for (vector<Sprite>::iterator itr = pipes.begin(); itr != pipes.end(); itr++) {
 			//hpipe = 320 * (*itr).getScale().y;
 			//cout << "pipe height: " << hpipe << endl;
 			ypipe = (*itr).getPosition().y;
-			cout << "pipe y: " << ypipe << endl;
+			//cout << "pipe y: " << ypipe << endl;
 			xpipe = (*itr).getPosition().x;
-			cout << "pipe x: " << xpipe << endl;
+			//cout << "pipe x: " << xpipe << endl;
 			if (xpipe > xpos){
 				break;
 			}	
@@ -513,13 +515,13 @@ int main() {
 		int xdif = xpipe - xpos;
 		int ydif = ypipe - ypos;
 
-		cout << "dif x: " << xdif << endl;
-		cout << "dif y: " << ydif << endl;
+		//cout << "dif x: " << xdif << endl;
+		//cout << "dif y: " << ydif << endl;
 
 		// Initial state
-		State current_state = create_state(xdif, ydif);
+		//State current_state = create_state(xdif, ydif);
 		// Initial action
-		int action = greedy_policy(current_state);
+		//int action = greedy_policy(current_state);
 
 		//cout << "state x: " << current_state.x_distance << endl;
 		//cout << "state y: " << current_state.y_distance << endl;
@@ -592,9 +594,9 @@ int main() {
 
 
 		// TAKE THE ACTION, a, AND OBSERVE THE OUTCOME STATE, s, AND REWARD, r
-		Pair next = q_learning(current_state, action, flappy);
-		current_state = next.state;
-		action = next.action;
+		Pair next = q_learning(current_state, action);
+		//current_state = next.state;
+		//action = next.action;
 	}
 
 	return 0;
