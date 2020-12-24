@@ -7,7 +7,7 @@ Flappy bird clone in C++ using the graphics library SFML
 
 First make sure that you have SFML 2+ installed. Then execute the following commands:
 
-- `g++ main.cpp -lsfml-graphics -lsfml-window -lsfml-system -lsfml-audio`
+- `g++ -std=c++11 main.cpp -lsfml-graphics -lsfml-window -lsfml-system -lsfml-audio`
 - `./a.out`
 
 ## How to install on Other Systems
