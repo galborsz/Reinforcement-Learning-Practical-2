@@ -36,6 +36,27 @@ struct Pair {
      int action;
 };
 
+int maxvec(vector<int> vec) {
+    double max = -10000;
+    for (int i=0; i<vec.size(); ++i) {
+        if (vec[i] > max) {
+            max = vec[i];
+    }   }
+    return max;
+}
+
+int minvec(vector<int> vec) {
+    double min = 10000;
+    for (int i=0; i<vec.size(); ++i) {
+        if (vec[i] < min) {
+            min = vec[i];
+    }   }
+    return min;
+}
+
+vector<int> diffy;
+vector<int> diffx;
+
 // flappy singleton struct.
 // v = vertical speed
 // frame = which texture to print
@@ -130,7 +151,7 @@ map< State, map< int, double > >  initialize_map() {
 	return m;
 }
 
-// Define action-value table as a map (key string: state, key int: action)
+// Define action-value table as a map (key state: state, key int: action)
 map< State, map< int, double > > Q_TABLE = initialize_map();
 
 void write_map(map< State, map< int, double > > m) {
@@ -174,7 +195,7 @@ int greedy_policy(State state) {
 	
 	double random = (double)rand() / RAND_MAX;
 	//cout << "random: " << random << endl;
-	if (random <= EPSILON){
+	if (random < EPSILON){
 		action = rand() % N_ACTIONS;	
 	} else {
 		action = argmax(state);
@@ -184,16 +205,14 @@ int greedy_policy(State state) {
 	return action;
 }
 
-// Computes next state and reward
-State next_position(State state, int action) {
-	if (action == 1){
-		flappy.v = -8;
-	}
-
+State get_state(){
 	int xpos = flappy.sprite.getPosition().x;
 	int ypos = flappy.sprite.getPosition().y;
 
 	float hpipe, xpipe, ypipe;
+	if (pipes.empty()){
+		cout << "pipes is empty" << endl;
+	}
 	for (vector<Sprite>::iterator itr = pipes.begin(); itr != pipes.end(); itr++) {
 		ypipe = (*itr).getPosition().y;
 		xpipe = (*itr).getPosition().x;
@@ -205,7 +224,29 @@ State next_position(State state, int action) {
 	int xdif = xpipe - xpos;
 	int ydif = ypipe - ypos;
 
-	State next_state = create_state(xdif, ydif);
+	/*cout << "flappy x: " << xpos << endl;
+	cout << "flappy y: " << ypos << endl;
+	cout << "pipe x: " << xpipe << endl;
+	cout << "pipe y: " << ypipe << endl;
+	cout << "dif x: " << xdif << endl;
+	cout << "dif y: " << ydif << endl;*/
+
+	diffy.push_back(ydif);
+	diffx.push_back(xdif);
+
+	return create_state(xdif, ydif);
+}
+
+// Computes next state and reward
+State next_position(State state, int action) {
+	if (action == 1){
+		flappy.v = -8;
+	}
+
+	flappy.sprite.move(0, flappy.v);
+	flappy.v += 0.5;
+
+	State next_state = get_state();
 
 	return next_state;
 }
@@ -241,7 +282,7 @@ bool check_collides() {
 		float fh = 24 * flappy.sprite.getScale().y;
 
 
-		if (collides(fx, fy, fw, fh, px, py, pw, ph)) {
+		if (collides(fx, fy, fw, fh, px, py, pw, ph) || fy > 600) {
 			game.gameState = gameover;
 			//sounds.dishk.play();
 			return 1;
@@ -265,7 +306,11 @@ Pair q_learning(State state, int action){
 	double maxQ = argmax(next_state);
 
 	// Update Q(S,A)
+	//cout << "q value before: " << Q_TABLE[state][next_action] << endl;
 	Q_TABLE[state][next_action] = Q_TABLE[state][next_action] + ALPHA * (reward + GAMMA * maxQ - Q_TABLE[state][next_action]);
+	//cout << "state x: " << state.x_distance << " state y: " << state.y_distance << endl;
+	//cout << "next_action: " << next_action << endl;
+	//cout << "q value after: " << Q_TABLE[state][next_action] << endl;
 
 	// return next state and next action
 	Pair next;
@@ -280,6 +325,31 @@ int choose_action() {
     double p = 0.5;
     if (r <= p) return 1;
     return 0;
+}
+
+void generate_pipes(){
+	if (game.frames % 150 == 0) {
+		int random = rand();
+		int r = random % 275 + 75;
+		//int r = 300;
+		int gap = 200;
+
+		// lower pipe
+		Sprite pipeL;
+		pipeL.setTexture(textures.pipe);
+		pipeL.setPosition(900, r + gap);
+		pipeL.setScale(2, 2);
+
+		// upper pipe
+		Sprite pipeU;
+		pipeU.setTexture(textures.pipe);
+		pipeU.setPosition(900, r);
+		pipeU.setScale(2, -2);
+
+		// push to the array
+		pipes.push_back(pipeL);
+		pipes.push_back(pipeU);
+	}
 }
 
 void restart(){
@@ -346,8 +416,11 @@ int main() {
 
 	restart();
 
+	// generate pipes (tubes)
+	generate_pipes();
+
 	// Initial state
-	State current_state = create_state(547, 100);
+	State current_state = get_state();
 	// Initial action
 	int action = greedy_policy(current_state);
 
@@ -356,6 +429,8 @@ int main() {
 
 	// main loop
 	while (window.isOpen()) {
+	//int count = 0;
+	//while (count < 6000) {
 
 		if (game.gameState == gameover) {
 			game.gameState = started;
@@ -375,7 +450,7 @@ int main() {
 		float fh = 24 * flappy.sprite.getScale().y;
 
 		// flap the wings if playing
-		if (game.gameState == waiting || game.gameState == started) {
+		if (game.gameState == started) {
 
 			// change the texture once in 6 frames
 			if (game.frames % 6 == 0) {
@@ -384,28 +459,48 @@ int main() {
 			if (flappy.frame == 3) {
 				flappy.frame = 0;
 			}
-		}
 
-		flappy.sprite.setTexture(textures.flappy[flappy.frame]);
+			flappy.sprite.setTexture(textures.flappy[flappy.frame]);
 
-		// move flappy
-		if (game.gameState == started) {
-			flappy.sprite.move(0, flappy.v);
-			flappy.v += 0.5;
-		}
+			// move flappy
+			/*if (game.gameState == started) {
+				flappy.sprite.move(0, flappy.v);
+				flappy.v += 0.5;
+			}*/
 
-		// if hits ceiling, stop ascending
-		// if out of screen, game over
-		if (game.gameState == started) {
+			// if hits ceiling, stop ascending
+			// if out of screen, game over
 			if (fy < 0) {
 				flappy.sprite.setPosition(250, 0);
 				flappy.v = 0;
-			} else if (fy > 600) {
-				flappy.v = 0;
-				game.gameState = gameover;
-				//sounds.dishk.play();
-				continue;
+			} 
+
+			// generate pipes (tubes)
+			generate_pipes();
+
+			// move pipes
+			if (game.gameState == started) {
+				for (vector<Sprite>::iterator itr = pipes.begin(); itr != pipes.end(); itr++) {
+					(*itr).move(-3, 0);
+				}
 			}
+
+			// remove pipes if offscreen
+			if (game.frames % 100 == 0) {
+				vector<Sprite>::iterator startitr = pipes.begin();
+				vector<Sprite>::iterator enditr = pipes.begin();
+
+				for (; enditr != pipes.end(); enditr++) {
+					if ((*enditr).getPosition().x > -104) {
+						break;
+					}
+				}
+
+				pipes.erase(startitr, enditr);
+			}
+
+			// collision detection
+			//if (check_collides() == 1) game.gameState = gameover;
 		}
 
 		// count the score
@@ -422,139 +517,12 @@ int main() {
 			}
 		}
 
-		
-		// generate pipes (tubes)
-		if (game.frames % 150 == 0) {
-			//int random = rand();
-			//int r = random % 275 + 75;
-			int r = 300;
-			int gap = 150;
-
-			// lower pipe
-			Sprite pipeL;
-			pipeL.setTexture(textures.pipe);
-			pipeL.setPosition(800, r + gap);
-			pipeL.setScale(2, 2);
-
-			// upper pipe
-			Sprite pipeU;
-			pipeU.setTexture(textures.pipe);
-			pipeU.setPosition(800, r);
-			pipeU.setScale(2, -2);
-
-			// push to the array
-			pipes.push_back(pipeL);
-			pipes.push_back(pipeU);
-		}
-
-		// move pipes
-		if (game.gameState == started) {
-			for (vector<Sprite>::iterator itr = pipes.begin(); itr != pipes.end(); itr++) {
-				(*itr).move(-3, 0);
-			}
-		}
-
-		// remove pipes if offscreen
-		if (game.frames % 100 == 0) {
-			vector<Sprite>::iterator startitr = pipes.begin();
-			vector<Sprite>::iterator enditr = pipes.begin();
-
-			for (; enditr != pipes.end(); enditr++) {
-				if ((*enditr).getPosition().x > -104) {
-					break;
-				}
-			}
-
-			pipes.erase(startitr, enditr);
-		}
-
-		// collision detection
-		if (game.gameState == started) {
-			for (vector<Sprite>::iterator itr = pipes.begin(); itr != pipes.end(); itr++) {
-
-				float px, py, pw, ph;
-
-				if ((*itr).getScale().y > 0) {
-					px = (*itr).getPosition().x;
-					py = (*itr).getPosition().y;
-					pw = 52 * (*itr).getScale().x;
-					ph = 320 * (*itr).getScale().y;
-				} else {
-					pw = 52 * (*itr).getScale().x;
-					ph = -320 * (*itr).getScale().y;
-					px = (*itr).getPosition().x;
-					py = (*itr).getPosition().y - ph;
-				}
-
-				if (collides(fx, fy, fw, fh, px, py, pw, ph)) {
-					game.gameState = gameover;
-					//sounds.dishk.play();
-				}
-			}
-		}
-
-		int xpos = flappy.sprite.getPosition().x;
-		int ypos = flappy.sprite.getPosition().y;
-
-		//cout << "flappy x: " << xpos << endl;
-		//cout << "flappy y: " << ypos << endl;
-
-		float hpipe, xpipe, ypipe;
-		for (vector<Sprite>::iterator itr = pipes.begin(); itr != pipes.end(); itr++) {
-			//hpipe = 320 * (*itr).getScale().y;
-			//cout << "pipe height: " << hpipe << endl;
-			ypipe = (*itr).getPosition().y;
-			//cout << "pipe y: " << ypipe << endl;
-			xpipe = (*itr).getPosition().x;
-			//cout << "pipe x: " << xpipe << endl;
-			if (xpipe > xpos){
-				break;
-			}	
-		}
-	
-		int xdif = xpipe - xpos;
-		int ydif = ypipe - ypos;
-
-		//cout << "dif x: " << xdif << endl;
-		//cout << "dif y: " << ydif << endl;
-
-		// Initial state
-		//State current_state = create_state(xdif, ydif);
-		// Initial action
-		//int action = greedy_policy(current_state);
-
-		//cout << "state x: " << current_state.x_distance << endl;
-		//cout << "state y: " << current_state.y_distance << endl;
-
 		// events
 		Event event;
 		while (window.pollEvent(event)) {
-
 			// bye bye
 			if (event.type == Event::Closed) {
 				window.close();
-			}
-			
-			// flap
-			/*else if (event.type == Event::KeyPressed &&
-					   event.key.code == Keyboard::Space) {
-				if (game.gameState == waiting) {
-					game.gameState = started;
-				}
-
-				if (game.gameState == started) {
-					flappy.v = -8;
-					sounds.hop.play();
-				}
-
-			// restart
-			}*/ else if (event.type == Event::KeyPressed &&
-					   event.key.code == Keyboard::C &&
-					   game.gameState == gameover) {
-				game.gameState = waiting;
-				flappy.sprite.setPosition(250, 300);
-				game.score = 0;
-				pipes.clear();
 			}
 		}
 
@@ -577,27 +545,26 @@ int main() {
 
 		window.display();
 
-		// gameover. press c to continue
-		if (game.gameState == gameover) {
-			//window.draw(game.gameover);
+		// gameover, skip loop
+		/*if (game.gameState == gameover) {
 			continue;
-			/*if (game.frames % 60 < 30) {
-				window.draw(game.pressC);
-			}*/
-		}
+		}*/
 
 		// dont forget to update total frames
 		game.frames++;
 
 		// DETERMINE THE ACTION, a, IN STATE, s, BASED ON Q MATRIX
-		//action = greedy_policy(current_state); 
-
-
 		// TAKE THE ACTION, a, AND OBSERVE THE OUTCOME STATE, s, AND REWARD, r
 		Pair next = q_learning(current_state, action);
 		current_state = next.state;
-		//action = next.action;
+		action = next.action;
+		//count++;
 	}
+
+	/*cout << "max dify: " << maxvec(diffy) << endl;
+	cout << "min dify: " << minvec(diffy) << endl;
+	cout << "max difx: " << maxvec(diffx) << endl;
+	cout << "min difx: " << minvec(diffx) << endl;*/
 
 	return 0;
 }
