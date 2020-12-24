@@ -595,7 +595,7 @@ int main() {
 
 		// TAKE THE ACTION, a, AND OBSERVE THE OUTCOME STATE, s, AND REWARD, r
 		Pair next = q_learning(current_state, action);
-		//current_state = next.state;
+		current_state = next.state;
 		//action = next.action;
 	}
 
