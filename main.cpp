@@ -99,14 +99,14 @@ enum GameState { waiting,
 // frames counts total frames passed since the beginning of time
 struct Game {
 	int score = 0;
-	int highscore = 0;
+	//int highscore = 0;
 	int frames = 0;
 	GameState gameState = started;
 	Sprite background[3];
 	Sprite gameover;
 	Text pressC;
 	Text scoreText;
-	Text highscoreText;
+	//Text highscoreText;
 	Font font;
 } game;
 
@@ -114,7 +114,6 @@ struct Game {
 	static int i = 0;
     return i++;
 }
-
 int num_range_second(){
 	static int i = 0;
     return i++;
@@ -239,14 +238,19 @@ State get_state(){
 
 // Computes next state and reward
 State next_position(State state, int action) {
+	cout << "before y: " << state.x_distance << endl;
+	cout << "before x: " << state.y_distance << endl;
+
 	if (action == 1){
 		flappy.v = -8;
 	}
-
 	flappy.sprite.move(0, flappy.v);
 	flappy.v += 0.5;
 
 	State next_state = get_state();
+
+	cout << "after y: " << next_state.x_distance << endl;
+	cout << "after x: " << next_state.y_distance << endl;
 
 	return next_state;
 }
@@ -259,7 +263,7 @@ bool collides(float x1, float y1, float w1, float h1, float x2, float y2, float 
 	return false;
 }
 
-bool check_collides() {
+int calculate_reward() {
 	for (vector<Sprite>::iterator itr = pipes.begin(); itr != pipes.end(); itr++) {
 
 		float px, py, pw, ph;
@@ -298,9 +302,11 @@ Pair q_learning(State state, int action){
 
 	// Take action A, observe R, S'
 	State next_state = next_position(state, next_action);
-	int reward;
-	if (check_collides() == 0) reward = 15;
+	int reward = 100;
+	if (calculate_reward() == 0) reward = 15;
 	else reward = -1000;
+
+	cout << "reward: " << reward << endl;
 
 	// max Q(S',a) for all a
 	double maxQ = argmax(next_state);
@@ -329,21 +335,19 @@ int choose_action() {
 
 void generate_pipes(){
 	if (game.frames % 150 == 0) {
-		int random = rand();
-		int r = random % 275 + 75;
-		//int r = 300;
-		int gap = 200;
+		int r = rand() % 275 + 75;
+		int gap = 150;
 
 		// lower pipe
 		Sprite pipeL;
 		pipeL.setTexture(textures.pipe);
-		pipeL.setPosition(900, r + gap);
+		pipeL.setPosition(1000, r + gap);
 		pipeL.setScale(2, 2);
 
 		// upper pipe
 		Sprite pipeU;
 		pipeU.setTexture(textures.pipe);
-		pipeU.setPosition(900, r);
+		pipeU.setPosition(1000, r);
 		pipeU.setScale(2, -2);
 
 		// push to the array
@@ -380,10 +384,10 @@ void restart(){
 	game.scoreText.setFont(game.font);
 	game.scoreText.setFillColor(Color::White);
 	game.scoreText.setCharacterSize(75);
-	game.scoreText.move(30, 0);
-	game.highscoreText.setFont(game.font);
-	game.highscoreText.setFillColor(Color::White);
-	game.highscoreText.move(30, 80);
+	game.scoreText.setPosition(30, 0);
+	//game.highscoreText.setFont(game.font);
+	//game.highscoreText.setFillColor(Color::White);
+	//game.highscoreText.move(30, 80);
 	game.frames = 0;
 }
 
@@ -417,12 +421,13 @@ int main() {
 	restart();
 
 	// generate pipes (tubes)
-	generate_pipes();
+	//generate_pipes();
 
 	// Initial state
 	State current_state = get_state();
 	// Initial action
 	int action = greedy_policy(current_state);
+	cout << "Initial action: " << action << endl;
 
 	// Set random seed 
 	srand(100);
@@ -441,7 +446,7 @@ int main() {
 		// update score
 		flappy.sprite.setTexture(textures.flappy[1]);
 		game.scoreText.setString(to_string(game.score));
-		game.highscoreText.setString("HI " + to_string(game.highscore));
+		//game.highscoreText.setString("HI " + to_string(game.highscore));
 
 		// update flappy
 		float fx = flappy.sprite.getPosition().x;
@@ -505,13 +510,14 @@ int main() {
 
 		// count the score
 		for (vector<Sprite>::iterator itr = pipes.begin(); itr != pipes.end(); itr++) {
+			cout << "pos pipe x: " << (*itr).getPosition().x << endl;
 			if (game.gameState == started && (*itr).getPosition().x == 250) {
 				game.score++;
 				sounds.ching.play();
 
-				if (game.score > game.highscore) {
+				/*if (game.score > game.highscore) {
 					game.highscore = game.score;
-				}
+				}*/
 
 				break;
 			}
@@ -541,7 +547,7 @@ int main() {
 
 		// draw scores
 		window.draw(game.scoreText);
-		window.draw(game.highscoreText);
+		//window.draw(game.highscoreText);
 
 		window.display();
 
