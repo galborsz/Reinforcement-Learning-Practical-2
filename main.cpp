@@ -99,14 +99,14 @@ enum GameState { waiting,
 // frames counts total frames passed since the beginning of time
 struct Game {
 	int score = 0;
-	//int highscore = 0;
+	int highscore = 0;
 	int frames = 0;
 	GameState gameState = started;
 	Sprite background[3];
 	Sprite gameover;
 	Text pressC;
 	Text scoreText;
-	//Text highscoreText;
+	Text highscoreText;
 	Font font;
 } game;
 
@@ -238,8 +238,8 @@ State get_state(){
 
 // Computes next state and reward
 State next_position(State state, int action) {
-	cout << "before y: " << state.x_distance << endl;
-	cout << "before x: " << state.y_distance << endl;
+	//cout << "before y: " << state.x_distance << endl;
+	//cout << "before x: " << state.y_distance << endl;
 
 	if (action == 1){
 		flappy.v = -8;
@@ -249,8 +249,8 @@ State next_position(State state, int action) {
 
 	State next_state = get_state();
 
-	cout << "after y: " << next_state.x_distance << endl;
-	cout << "after x: " << next_state.y_distance << endl;
+	//cout << "after y: " << next_state.x_distance << endl;
+	//cout << "after x: " << next_state.y_distance << endl;
 
 	return next_state;
 }
@@ -306,7 +306,7 @@ Pair q_learning(State state, int action){
 	if (calculate_reward() == 0) reward = 15;
 	else reward = -1000;
 
-	cout << "reward: " << reward << endl;
+	//cout << "reward: " << reward << endl;
 
 	// max Q(S',a) for all a
 	double maxQ = argmax(next_state);
@@ -385,10 +385,11 @@ void restart(){
 	game.scoreText.setFillColor(Color::White);
 	game.scoreText.setCharacterSize(75);
 	game.scoreText.setPosition(30, 0);
-	//game.highscoreText.setFont(game.font);
-	//game.highscoreText.setFillColor(Color::White);
-	//game.highscoreText.move(30, 80);
+	game.highscoreText.setFont(game.font);
+	game.highscoreText.setFillColor(Color::White);
+	game.highscoreText.setPosition(30, 80);
 	game.frames = 0;
+	game.score = 0;
 }
 
 int main() {
@@ -399,7 +400,7 @@ int main() {
 
 	// create the window and set general settings. Plant the seeds
 	RenderWindow window(VideoMode(1000, 600), "Floppy Bird");
-	window.setFramerateLimit(60);
+	window.setFramerateLimit(150); //how fast frames move?
 	window.setKeyRepeatEnabled(false);
 
 	// load sounds
@@ -432,12 +433,16 @@ int main() {
 	// Set random seed 
 	srand(100);
 
+	int iteration = 0;
+
 	// main loop
 	while (window.isOpen()) {
-	//int count = 0;
+	
 	//while (count < 6000) {
 
 		if (game.gameState == gameover) {
+			iteration++;
+			cout << "Iteration: " << iteration << ", Score: " << to_string(game.score) << ", HighScore: " << to_string(game.highscore) << endl;
 			game.gameState = started;
 			pipes.clear();
 			restart();
@@ -446,7 +451,7 @@ int main() {
 		// update score
 		flappy.sprite.setTexture(textures.flappy[1]);
 		game.scoreText.setString(to_string(game.score));
-		//game.highscoreText.setString("HI " + to_string(game.highscore));
+		game.highscoreText.setString("HI " + to_string(game.highscore));
 
 		// update flappy
 		float fx = flappy.sprite.getPosition().x;
@@ -478,7 +483,7 @@ int main() {
 			if (fy < 0) {
 				flappy.sprite.setPosition(250, 0);
 				flappy.v = 0;
-			} 
+			}
 
 			// generate pipes (tubes)
 			generate_pipes();
@@ -510,14 +515,13 @@ int main() {
 
 		// count the score
 		for (vector<Sprite>::iterator itr = pipes.begin(); itr != pipes.end(); itr++) {
-			cout << "pos pipe x: " << (*itr).getPosition().x << endl;
 			if (game.gameState == started && (*itr).getPosition().x == 250) {
 				game.score++;
 				sounds.ching.play();
 
-				/*if (game.score > game.highscore) {
+				if (game.score > game.highscore) {
 					game.highscore = game.score;
-				}*/
+				}
 
 				break;
 			}
@@ -547,7 +551,7 @@ int main() {
 
 		// draw scores
 		window.draw(game.scoreText);
-		//window.draw(game.highscoreText);
+		window.draw(game.highscoreText);
 
 		window.display();
 
@@ -564,7 +568,6 @@ int main() {
 		Pair next = q_learning(current_state, action);
 		current_state = next.state;
 		action = next.action;
-		//count++;
 	}
 
 	/*cout << "max dify: " << maxvec(diffy) << endl;
