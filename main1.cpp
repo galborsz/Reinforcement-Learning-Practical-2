@@ -79,6 +79,9 @@ bool collides(float x1, float y1, float w1, float h1, float x2, float y2, float 
 
 	float hpipe, xpipe, ypipe;
 	if (pipes.empty()){
+		xdif = 10000;
+		ydif = 10000;
+		return;
 		//cout << "pipes is empty" << endl;
 	}
 	for (vector<Sprite>::iterator itr = pipes.begin(); itr != pipes.end(); itr++) {
@@ -158,7 +161,7 @@ int main() {
 	int reward;
 
 	//show window
-	bool disp = true;
+	bool disp = false;
 	bool greedy = false;
 	int iteration = 0;
 	int interation_limit = 10000;
@@ -197,24 +200,11 @@ int main() {
 		flappy.sprite.setTexture(textures.flappy[flappy.frame]);
 
 
-		// if hits ceiling, stop ascending
-		// if out of screen, game over
-		if (game.gameState == started) {
-			if (fy < 0) {
-				flappy.sprite.setPosition(250, 0);
-				flappy.v = 0;
-			} else if (fy > 600) {
-				flappy.v = 0;
-				game.gameState = gameover;
-				sounds.dishk.play();
-			}
-		}
-
 		// count the score
 		for (vector<Sprite>::iterator itr = pipes.begin(); itr != pipes.end(); itr++) {
 			if (game.gameState == started && (*itr).getPosition().x == 250) {
 				game.score++;
-				sounds.ching.play();
+				//sounds.ching.play();
 
 				if (game.score > game.highscore) {
 					game.highscore = game.score;
@@ -287,21 +277,27 @@ int main() {
 		if (game.gameState == started) {
 			flappy.sprite.move(0, flappy.v);
 			flappy.v += 0.5;
-			if (agent->act(xdif, ydif, flappy.v, greedy)) {
+			if (!greedy && agent->act(xdif, ydif, flappy.v)) {
 				flappy.v = -8;
-				sounds.hop.play();
-			}
-			if (greedy && agent->act(xdif, ydif, flappy.v, greedy)) {
+				//sounds.hop.play();
+			} else if (greedy && agent->actgreedy(xdif, ydif, flappy.v)) {
 				flappy.v = -8;
-				sounds.hop.play();
+				//sounds.hop.play();
 			}
 		}
 
-		//recalculating xdif and ydif
-		calculate_state_xy(xdif, ydif);
-
-		//update qlearning_agent
-		agent->update_qtable(xdif, ydif, flappy.v, reward);
+		// if hits ceiling, stop ascending
+		// if out of screen, game over
+		if (game.gameState == started) {
+			if (fy < 0) {
+				flappy.sprite.setPosition(250, 0);
+				flappy.v = 0;
+			} else if (fy > 600) {
+				flappy.v = 0;
+				game.gameState = gameover;
+				//sounds.dishk.play();
+			}
+		}
 
 
 		// collision detection
@@ -324,22 +320,29 @@ int main() {
 
 				if (collides(fx, fy, fw, fh, px, py, pw, ph)) { //EDIT
 					game.gameState = gameover;
-					sounds.dishk.play();
-					reward = -1000;
-				} else {
-					reward = 1;
+					//sounds.dishk.play();
+
 				}
 			}
 		}
 
 		// gameover. restarts game immediately //EDIT
 		if (game.gameState == gameover) {
+			reward = -1000;
 			iteration++;
 			game.gameState = started;
 			flappy.sprite.setPosition(250, 300);
 			game.score = 0;
 			pipes.clear();
+		} else {
+			reward = 1;
 		}
+
+		//recalculating xdif and ydif
+		calculate_state_xy(xdif, ydif);
+
+		//update qlearning_agent
+		if (!greedy) agent->update_qtable(xdif, ydif, flappy.v, reward);
 
 ///////////////////////////////////////////////////////////////////////////////////////////////
 

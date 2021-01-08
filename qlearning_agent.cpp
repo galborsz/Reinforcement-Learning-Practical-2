@@ -18,13 +18,17 @@ string qlearning_agent::create_state(int xdif, int ydif, int velocity) {
     return state;
 }
 
-int qlearning_agent::act(int xdif, int ydif, int velocity, bool greedy) {
+int qlearning_agent::act(int xdif, int ydif, int velocity) {
     //two next lines can be moved to the end of update
     string state = create_state(xdif, ydif, velocity);
     last_state = state;
     last_action = e_greedy_policy(state);
-    if (greedy) last_action = greedy_action(state);
     return last_action;
+}
+
+int qlearning_agent::actgreedy(int xdif, int ydif, int velocity) {
+    string state = create_state(xdif, ydif, velocity);
+    return greedy_action(state);
 }
 
 void qlearning_agent::update_qtable(int xdif, int ydif, int velocity, int reward) {

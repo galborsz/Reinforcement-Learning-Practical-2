@@ -20,7 +20,8 @@ class qlearning_agent {
 
     public:
         qlearning_agent();
-        int act(int xdif, int ydif, int velocity, bool greedy);
+        int act(int xdif, int ydif, int velocity);
+        int actgreedy(int xdif, int ydif, int velocity);
         void update_qtable(int xdif, int ydif, int velocity, int reward);
         int greedy_action(string state);
         int e_greedy_policy(string state);
