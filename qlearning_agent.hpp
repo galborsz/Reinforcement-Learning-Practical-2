@@ -9,10 +9,10 @@ using namespace std;
 
 class qlearning_agent {
     private:
-        static const double GAMMA = 1;
-        static const double ALPHA = 0.5;
-        static const double EPSILON = 0.1;
-        static const int N_ACTIONS = 2;
+        static constexpr double GAMMA = 1;
+        static constexpr double ALPHA = 0.5;
+        static constexpr double EPSILON = 0.1;
+        static constexpr int N_ACTIONS = 2;
         int pap;
         string last_state;
         int last_action;
