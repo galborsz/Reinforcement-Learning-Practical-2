@@ -12,6 +12,18 @@
 using namespace sf;
 using namespace std;
 
+#define PBSTR "||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||"
+#define PBWIDTH 60
+
+//https://stackoverflow.com/questions/14539867/how-to-display-a-progress-indicator-in-pure-c-c-cout-printf
+void printProgress(double percentage) {
+    int val = (int) (percentage * 100);
+    int lpad = (int) (percentage * PBWIDTH);
+    int rpad = PBWIDTH - lpad;
+    printf("\r%3d%% [%.*s%*s]", val, lpad, PBSTR, rpad, "");
+    fflush(stdout);
+}
+
 
 // all textures remain in here. Flappy has 3 textures, which will repeadetly draw, creating the illusion of flying.
 struct Textures {
@@ -79,14 +91,15 @@ bool collides(float x1, float y1, float w1, float h1, float x2, float y2, float 
 
 	float hpipe, xpipe, ypipe;
 	if (pipes.empty()){
-		xdif = 10000;
-		ydif = 10000;
+		//xdif = 10000;
+		//ydif = 10000;
+		cout << "pipes is empty" << endl;
 		return;
-		//cout << "pipes is empty" << endl;
 	}
+	//std::cout << "/* cal */" << '\n';
 	for (vector<Sprite>::iterator itr = pipes.begin(); itr != pipes.end(); itr++) {
 		ypipe = (*itr).getPosition().y;
-		xpipe = (*itr).getPosition().x;
+		xpipe = (*itr).getPosition().x + 52 * (*itr).getScale().x; //EDIT
 		if (xpipe > xpos){
 			break;
 		}
@@ -158,33 +171,40 @@ int main() {
 
 	//declaring needed variables
 	int xdif, ydif;
-	int reward;
+	double reward;
 
 	//show window
+	int iteration = 0;
+	int interation_limit = 100000;
 	bool disp = false;
 	bool greedy = false;
-	int iteration = 0;
-	int interation_limit = 10000;
 
 
 	// main loop
 	while (iteration != interation_limit) { //window.isOpen()
 
+
 		if (iteration == interation_limit-1) {
-			disp = true;
 			greedy = true;
+			sounds.ching.play();
 		}
+
+		if (game.gameState == gameover) {
+			game.gameState = started;
+			flappy.sprite.setPosition(250, 300);
+			game.frames = 0; //EDIT
+			game.score = 0;
+			pipes.clear();
+			iteration++;
+			double percentage = ((double)iteration/(double)interation_limit);
+			printProgress(percentage);
+		}
+
 
 		// update score
 		flappy.sprite.setTexture(textures.flappy[1]);
 		game.scoreText.setString(to_string(game.score));
 		game.highscoreText.setString("HI " + to_string(game.highscore));
-
-		// update flappy
-		float fx = flappy.sprite.getPosition().x;
-		float fy = flappy.sprite.getPosition().y;
-		float fw = 34 * flappy.sprite.getScale().x;
-		float fh = 24 * flappy.sprite.getScale().y;
 
 		// flap the wings if playing
 		if (game.gameState == started) {
@@ -215,8 +235,9 @@ int main() {
 		}
 
 		// generate pipes
-		if (game.gameState == started && game.frames % 150 == 0) {
+		if (game.gameState == started && game.frames % 150 == 0) { //EDIT so that pipes generate right away
 			int r = rand() % 275 + 75;
+			//r = 300;
 			int gap = 150;
 
 			// lower pipe
@@ -235,6 +256,8 @@ int main() {
 			pipes.push_back(pipeL);
 			pipes.push_back(pipeU);
 		}
+
+		calculate_state_xy(xdif, ydif);
 
 		// move pipes
 		if (game.gameState == started) {
@@ -259,32 +282,21 @@ int main() {
 
 ///////////////////////////////////////////////////////////////////////////////////////////////
 
-		// events
-		Event event;
-		while (window.pollEvent(event)) {
-
-			// bye bye
-			if (event.type == Event::Closed) {
-				window.close();
-			}
-		}
-
-		//calculating xdif and ydif
-		calculate_state_xy(xdif, ydif);
 
 
 		//move flappy according to agent policy
 		if (game.gameState == started) {
-			flappy.sprite.move(0, flappy.v);
-			flappy.v += 0.5;
-			if (!greedy && agent->act(xdif, ydif, flappy.v)) {
-				flappy.v = -8;
-				//sounds.hop.play();
-			} else if (greedy && agent->actgreedy(xdif, ydif, flappy.v)) {
+			if ((!greedy && agent->act(xdif, ydif, flappy.v)) || (greedy && agent->actgreedy(xdif, ydif, flappy.v))) {
 				flappy.v = -8;
 				//sounds.hop.play();
 			}
+			flappy.sprite.move(0, flappy.v);
+			flappy.v += 0.5;
 		}
+
+		// update flappy
+		float fx = flappy.sprite.getPosition().x;
+		float fy = flappy.sprite.getPosition().y;
 
 		// if hits ceiling, stop ascending
 		// if out of screen, game over
@@ -292,12 +304,18 @@ int main() {
 			if (fy < 0) {
 				flappy.sprite.setPosition(250, 0);
 				flappy.v = 0;
+				game.gameState = gameover; //EDIT
 			} else if (fy > 600) {
 				flappy.v = 0;
 				game.gameState = gameover;
 				//sounds.dishk.play();
 			}
 		}
+
+		fx = flappy.sprite.getPosition().x;
+		fy = flappy.sprite.getPosition().y;
+		fw = 34 * flappy.sprite.getScale().x;
+		fh = 24 * flappy.sprite.getScale().y;
 
 
 		// collision detection
@@ -329,20 +347,42 @@ int main() {
 		// gameover. restarts game immediately //EDIT
 		if (game.gameState == gameover) {
 			reward = -1000;
-			iteration++;
-			game.gameState = started;
-			flappy.sprite.setPosition(250, 300);
-			game.score = 0;
-			pipes.clear();
 		} else {
-			reward = 1;
+			reward = 0;
 		}
 
 		//recalculating xdif and ydif
 		calculate_state_xy(xdif, ydif);
 
 		//update qlearning_agent
-		if (!greedy) agent->update_qtable(xdif, ydif, flappy.v, reward);
+		//if (!greedy)
+		agent->update_qtable(xdif, ydif, flappy.v, reward);
+
+		// events
+		Event event;
+		while (window.pollEvent(event)) {
+			// bye bye
+			if (event.type == Event::Closed) {
+				window.close();
+			} else if (event.type == Event::KeyPressed &&
+					   event.key.code == Keyboard::D) {
+				disp = true;
+			} else if (event.type == Event::KeyPressed &&
+					   event.key.code == Keyboard::F) {
+				 disp = false;
+			} else if (event.type == Event::KeyPressed &&
+ 					   event.key.code == Keyboard::A) {
+ 				 greedy = true;
+				 std::cout << "greedy" << '\n';
+			} else if (event.type == Event::KeyPressed &&
+ 					   event.key.code == Keyboard::S) {
+ 				 greedy = false;
+				 std::cout << "explore" << '\n';
+			 } else if (event.type == Event::KeyPressed &&
+  					   event.key.code == Keyboard::P) {
+ 				 std::cout << "xdif" << xdif << "ydif" << ydif << '\n';
+  			}
+		}
 
 ///////////////////////////////////////////////////////////////////////////////////////////////
 
@@ -370,6 +410,7 @@ int main() {
 
 		// dont forget to update total frames
 		game.frames++;
+
 	}
 
 	agent->print_count();

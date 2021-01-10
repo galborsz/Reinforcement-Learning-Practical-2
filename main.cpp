@@ -392,7 +392,7 @@ void restart(){
 	game.score = 0;
 }
 
-int main() {
+int main1() {
 
 	/*Pair xy = get_XY("12_13_0");
 	cout << "value x: " << xy.value1 << endl;
