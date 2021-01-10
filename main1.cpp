@@ -1,3 +1,4 @@
+
 #include <SFML/Audio.hpp>
 #include <SFML/Graphics.hpp>
 #include <iostream>
@@ -174,7 +175,7 @@ int main() {
 
 	//show window
 	int iteration = 0;
-	int interation_limit = 100000;
+	int interation_limit = 1000000;
 	bool disp = false;
 	bool greedy = false;
 
@@ -313,8 +314,8 @@ int main() {
 
 		fx = flappy.sprite.getPosition().x;
 		fy = flappy.sprite.getPosition().y;
-		fw = 34 * flappy.sprite.getScale().x;
-		fh = 24 * flappy.sprite.getScale().y;
+		float fw = 34 * flappy.sprite.getScale().x;
+		float fh = 24 * flappy.sprite.getScale().y;
 
 
 		// collision detection
