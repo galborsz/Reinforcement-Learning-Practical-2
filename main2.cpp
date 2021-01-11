@@ -7,7 +7,7 @@
 #include <vector>
 #include <unordered_map>
 
-#include "qlearning_agent.hpp"
+#include "sarsa_agent.hpp"
 
 using namespace sf;
 using namespace std;
@@ -110,6 +110,7 @@ bool collides(float x1, float y1, float w1, float h1, float x2, float y2, float 
 }
 
 int main() {
+
 	// create the window and set general settings. Plant the seeds
 	RenderWindow window(VideoMode(1000, 600), "Flappy Bird");
 	window.setFramerateLimit(100);
@@ -166,7 +167,7 @@ int main() {
 	game.highscoreText.move(30, 80);
 
 	//INITIALIZE LEARNING BOT
-	qlearning_agent *agent = new qlearning_agent();
+	sarsa_agent *agent = new sarsa_agent();
 
 	//declaring needed variables
 	int xdif, ydif;
@@ -177,7 +178,7 @@ int main() {
 	int interation_limit = 1000000;
 	bool disp = false;
 	bool greedy = false;
-
+    bool start = true;
 
 	// main loop
 	while (iteration != interation_limit) { //window.isOpen()
@@ -189,6 +190,7 @@ int main() {
 
 		if (game.gameState == gameover) {
 			game.gameState = started;
+            start = true;
 			flappy.sprite.setPosition(250, 300);
 			game.frames = 0; //EDIT
 			game.score = 0;
@@ -255,7 +257,14 @@ int main() {
 			pipes.push_back(pipeU);
 		}
 
-		calculate_state_xy(xdif, ydif);
+        if (start){
+            //Initialize S
+            calculate_state_xy(xdif, ydif);
+            //Choose A from S using policy derived from Q (e.g. e-greedy)
+            if(greedy) agent->choose_action_greedy(xdif, ydif, flappy.v);
+            else agent->choose_action(xdif, ydif, flappy.v);
+            start = false;
+        }
 
 		// move pipes
 		if (game.gameState == started) {
@@ -280,12 +289,10 @@ int main() {
 
 ///////////////////////////////////////////////////////////////////////////////////////////////
 
-
-
 		//move flappy according to agent policy
-		//Choose A from S using policy derived from Q (e.g. e-greedy) and Take action A
+		//Take action A
 		if (game.gameState == started) {
-			if ((!greedy && agent->act(xdif, ydif, flappy.v)) || (greedy && agent->actgreedy(xdif, ydif, flappy.v))) {
+			if (agent->act()) {
 				flappy.v = -8;
 				//sounds.hop.play();
 			}
@@ -356,7 +363,7 @@ int main() {
 		calculate_state_xy(xdif, ydif);
 
 		//update qlearning_agent
-		agent->update_qtable_qlearning(xdif, ydif, flappy.v, reward);
+		agent->update_qtable_sarsa(xdif, ydif, flappy.v, reward, greedy);
 
 		// events
 		Event event;

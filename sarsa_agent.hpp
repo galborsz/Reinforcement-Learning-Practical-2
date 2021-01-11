@@ -7,7 +7,7 @@
 
 using namespace std;
 
-class qlearning_agent {
+class sarsa_agent {
     private:
         static constexpr double GAMMA = 1;
         static constexpr double ALPHA = 0.7;
@@ -22,15 +22,16 @@ class qlearning_agent {
         void initialize_qtable();
 
     public:
-        qlearning_agent();
-        int act(int xdif, int ydif, int velocity);
-        int actgreedy(int xdif, int ydif, int velocity);
-        void update_qtable_qlearning(int xdif, int ydif, int velocity, double reward);
+        sarsa_agent();
+        void choose_action(int xdif, int ydif, int velocity);
+        void choose_action_greedy(int xdif, int ydif, int velocity);
+        int act();
+        void update_qtable_sarsa(int xdif, int ydif, int velocity, double reward, bool greedy);
+        string create_state(int xdif, int ydif, int velocity);
         int greedy_action(string state);
         int e_greedy_policy(string state);
-        string create_state(int xdif, int ydif, int velocity);
         void print_count();
         void clearQtable();
 };
 
-#endif /* QLEARNING_AGENT */
+#endif /* SARSA_AGENT */

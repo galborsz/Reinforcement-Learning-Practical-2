@@ -1,13 +1,13 @@
 #include <iostream>
 #include <stdlib.h>
-#include "qlearning_agent.hpp"
+#include "sarsa_agent.hpp"
 
-qlearning_agent::qlearning_agent() {
+sarsa_agent::sarsa_agent() {
     state_count = 0;
     srand(time(NULL));
 }
 
-string qlearning_agent::create_state(int xdif, int ydif, int velocity) {
+string sarsa_agent::create_state(int xdif, int ydif, int velocity) {
     if (xdif <= 500) {
         xdif = xdif - (xdif % 10);
         ydif = ydif - (ydif % 10);
@@ -19,45 +19,49 @@ string qlearning_agent::create_state(int xdif, int ydif, int velocity) {
         velocity = velocity - (velocity % 5);
     }
 
+
+
     string state = to_string(xdif) + "_" + to_string(ydif) + "_" + to_string(velocity);
     //std::cout << state << '\n';
     return state;
 }
 
-int qlearning_agent::act(int xdif, int ydif, int velocity) {
-    //two next lines can be moved to the end of update
+void sarsa_agent::choose_action(int xdif, int ydif, int velocity){
     string state = create_state(xdif, ydif, velocity);
-    if (state == last_state) return 0;
+    last_state = state;
+    last_action = greedy_action(state);
+}
+
+void sarsa_agent::choose_action_greedy(int xdif, int ydif, int velocity){
+    string state = create_state(xdif, ydif, velocity);
     last_state = state;
     last_action = e_greedy_policy(state);
+}
+
+int sarsa_agent::act() {
     return last_action;
 }
 
-
-int qlearning_agent::actgreedy(int xdif, int ydif, int velocity) {
-	string state = create_state(xdif, ydif, velocity);
-    if (state == last_state) return 0;
-	last_state = state;
-    last_action = greedy_action(state);
-    return last_action;
-}
-
-
-void qlearning_agent::update_qtable_qlearning(int xdif, int ydif, int velocity, double reward) {
+void sarsa_agent::update_qtable_sarsa(int xdif, int ydif, int velocity, double reward, bool greedy) {
+    //Choose A' from S' using policy derived from Q (e.g. e-greedy)
     string new_state = create_state(xdif, ydif, velocity);
     if (new_state == last_state) return;
-	int new_action = greedy_action(new_state);
+	int new_action;
+    if (greedy) new_action = greedy_action(new_state);
+    else new_action = e_greedy_policy(new_state);
 
     double update = ALPHA * (reward + GAMMA * (Q_TABLE[new_state][new_action] - Q_TABLE[last_state][last_action]));
 
-	// Update Q(S,A)
+	//Update Q(S,A)
 	Q_TABLE[last_state][last_action] += update;
+
+    last_action = new_action;
+    last_state = new_state;
 
 }
 
-
 //returns greedy action given the state
-int qlearning_agent::greedy_action(string state) {
+int sarsa_agent::greedy_action(string state) {
 
     if (Q_TABLE.find(state) == Q_TABLE.end() && Q_TABLE[state].find(0) == Q_TABLE[state].end()) { //looks for new state and creates it if it doesnt exist
         Q_TABLE[state][0] = 0;
@@ -81,7 +85,7 @@ int qlearning_agent::greedy_action(string state) {
 /* Performs greedy policy. With prob epsilon pick action
 belonging to maximum action-value. With prob 1-epsilon
 pick a random action. */
-int qlearning_agent::e_greedy_policy(string state) {
+int sarsa_agent::e_greedy_policy(string state) {
 	double random = (double)rand() / RAND_MAX;
 
 	if (random < EPSILON){
@@ -97,6 +101,6 @@ int qlearning_agent::e_greedy_policy(string state) {
 	}
 }
 
-void qlearning_agent::print_count(){std::cout << "state_count: "<< state_count << '\n';}
+void sarsa_agent::print_count(){std::cout << "state_count: "<< state_count << '\n';}
 
-void qlearning_agent::clearQtable(){Q_TABLE.clear();}
+void sarsa_agent::clearQtable(){Q_TABLE.clear();}
