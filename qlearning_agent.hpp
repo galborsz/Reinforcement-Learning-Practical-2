@@ -11,7 +11,7 @@ class qlearning_agent {
     private:
         static constexpr double GAMMA = 1;
         static constexpr double ALPHA = 0.7;
-        static constexpr double EPSILON = 0.1;
+        static constexpr double EPSILON = 0.01;
         static constexpr int N_ACTIONS = 2;
         int pap;
         string last_state;

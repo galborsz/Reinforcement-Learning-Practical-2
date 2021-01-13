@@ -193,7 +193,7 @@ int main() {
 	int iteration_limit = 26000;
 	bool disp = false;
 	bool greedy = true;
-	vector<double> total_score (iteration_limit);
+	vector<double> total_score;
 
 
 	// main loop

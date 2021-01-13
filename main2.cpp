@@ -191,11 +191,11 @@ int main() {
 
 	//show window
 	int iteration = 0;
-	int iteration_limit = 26000;
+	int iteration_limit = 100000;
 	bool disp = false;
-	bool greedy = true;
+	bool greedy = false;
     bool start = true;
-    vector<double> total_score (iteration_limit);
+    vector<double> total_score;
 
 	// main loop
 	while (iteration != iteration_limit) { //window.isOpen()
@@ -206,6 +206,7 @@ int main() {
 		}
 
 		if (game.gameState == gameover) {
+            cout << "it: " << iteration << " score: " << game.score << endl;
             total_score.push_back(game.score);
 			game.gameState = started;
             start = true;
@@ -363,7 +364,6 @@ int main() {
 				if (collides(fx, fy, fw, fh, px, py, pw, ph)) { //EDIT
 					game.gameState = gameover;
 					//sounds.dishk.play();
-
 				}
 			}
 		}
@@ -437,7 +437,8 @@ int main() {
 	}
 
 	agent->print_count();
-    saveData(total_score, "total_score_sarsa_greedy.txt");
+    cout << "size vector: " << total_score.size() << endl;
+    saveData(total_score, "total_score_sarsa_epsilon_greedy_0.01.txt");
 
 	delete agent;
 
