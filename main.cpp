@@ -14,6 +14,7 @@
 #include "qlearning_agent.hpp"
 #include "agent.hpp"
 #include "sarsa_agent.hpp"
+#include "double_qlearning_agent.hpp"
 
 using namespace sf;
 using namespace std;
@@ -190,8 +191,8 @@ int main() {
 	vector<double> total_score;
 
 	//experiment parameters
-	int agent_type = 2; // 1 = qlearning, 2 = sarsa
-	int iteration_limit = 1000000;
+	int agent_type = 1; // 1 = qlearning, 2 = sarsa, 3 = double qlearning
+	int iteration_limit = 50000;
 	bool disp = false;
 	bool greedy = false;
 	bool eligibility_traces = false;
@@ -199,15 +200,38 @@ int main() {
 
 	//INITIALIZE LEARNING BOT
 	agent *agent1;
+	/* switch case doesnt work for some reason
+	switch(agent_type) {
+        case 1: { 
+            agent1 = new qlearning_agent(eligibility_traces);
+        }
+        case 2: { 
+            agent1 = new sarsa_agent();
+        }
+        case 3: {
+            agent1 = new double_qlearning_agent();
+        }
+        default: {
+            cout << "Invalid agent type code";
+        }
+    }
+	*/
+
 	if (agent_type == 1) {
 		agent1 = new qlearning_agent(eligibility_traces);
+
 	} else if (agent_type == 2) {
 		agent1 = new sarsa_agent();
+
+	} else if (agent_type == 3) {
+		agent1 = new double_qlearning_agent();
 	}
+ 
 
 	if (run_from_file) {
 		agent1->load_qtables_from_file("qvalues");
 	}
+
 
 	// main loop
 	while (iteration != iteration_limit) { //window.isOpen()
@@ -235,6 +259,7 @@ int main() {
 			game.score = 0;
 			pipes.clear();
 			iteration++;
+			agent1->set_epsilon(iteration);
 			double percentage = ((double)iteration/(double)iteration_limit);
 			printProgress(percentage);
 		}

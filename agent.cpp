@@ -3,7 +3,10 @@
 
 using namespace std;
 
-agent::agent() {state_count = 0;}
+agent::agent() {
+    state_count = 0;
+    EPSILON = 1;
+}
 
 int agent::act() {
     cout << "failed action, implement for agent" << endl;
@@ -12,6 +15,12 @@ int agent::act() {
 
 void agent::update(int xdif, int ydif, int velocity, double reward, bool dead, bool greedy) {
     cout << "failed update, implement for agent" << endl;
+}
+
+void agent::set_epsilon(int iteration) {
+	double iter = (double)iteration /10;
+	if (iter < 0) iter = 1;
+	EPSILON = 1/iter;
 }
 
 string agent::create_state(int xdif, int ydif, int velocity) {
