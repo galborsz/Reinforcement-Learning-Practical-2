@@ -437,7 +437,7 @@ int main() {
 	}
 
 	agent->print_count();
-    saveData(total_score, "total_score_sarsa.txt");
+    saveData(total_score, "total_score_sarsa_greedy.txt");
 
 	delete agent;
 

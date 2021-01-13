@@ -26,13 +26,13 @@ string sarsa_agent::create_state(int xdif, int ydif, int velocity) {
     return state;
 }
 
-void sarsa_agent::choose_action(int xdif, int ydif, int velocity){
+void sarsa_agent::choose_action_greedy(int xdif, int ydif, int velocity){
     string state = create_state(xdif, ydif, velocity);
     last_state = state;
     last_action = greedy_action(state);
 }
 
-void sarsa_agent::choose_action_greedy(int xdif, int ydif, int velocity){
+void sarsa_agent::choose_action(int xdif, int ydif, int velocity){
     string state = create_state(xdif, ydif, velocity);
     last_state = state;
     last_action = e_greedy_policy(state);

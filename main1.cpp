@@ -6,6 +6,10 @@
 #include <time.h>
 #include <vector>
 #include <unordered_map>
+#include <math.h>
+#include <string>
+#include <iomanip>
+#include <fstream>
 
 #include "qlearning_agent.hpp"
 
@@ -22,6 +26,18 @@ void printProgress(double percentage) {
     int rpad = PBWIDTH - lpad;
     printf("\r%3d%% [%.*s%*s]", val, lpad, PBSTR, rpad, "");
     fflush(stdout);
+}
+
+void saveData(vector<double> data, string fileName){
+    // Create and open a text file
+    ofstream MyFile(fileName);
+    ofstream myfile;
+    myfile.open(fileName);
+    for(int i=0; i<data.size(); i++){
+        myfile << data[i] << endl;
+    }
+    // Close the file
+    MyFile.close();
 }
 
 
@@ -174,27 +190,29 @@ int main() {
 
 	//show window
 	int iteration = 0;
-	int interation_limit = 1000000;
+	int iteration_limit = 26000;
 	bool disp = false;
-	bool greedy = false;
+	bool greedy = true;
+	vector<double> total_score (iteration_limit);
 
 
 	// main loop
-	while (iteration != interation_limit) { //window.isOpen()
+	while (iteration != iteration_limit) { //window.isOpen()
 
-		if (iteration == interation_limit-1) {
+		if (iteration == iteration_limit-1) {
 			greedy = true;
 			sounds.ching.play();
 		}
 
 		if (game.gameState == gameover) {
+			total_score.push_back(game.score);
 			game.gameState = started;
 			flappy.sprite.setPosition(250, 300);
 			game.frames = 0; //EDIT
 			game.score = 0;
 			pipes.clear();
 			iteration++;
-			double percentage = ((double)iteration/(double)interation_limit);
+			double percentage = ((double)iteration/(double)iteration_limit);
 			printProgress(percentage);
 		}
 
@@ -414,6 +432,7 @@ int main() {
 	}
 
 	agent->print_count();
+	saveData(total_score, "total_score_qlearning_greedy.txt");
 
 	delete agent;
 
