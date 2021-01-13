@@ -4,16 +4,16 @@
 #include <iostream>
 #include <unordered_map>
 #include <vector>
+#include "agent.hpp"
 
 
 using namespace std;
 
-class qlearning_agent {
+class qlearning_agent: public agent {
     private:
         static constexpr double GAMMA = 1;
         static constexpr double ALPHA = 0.7;
-        static constexpr double EPSILON = 0.005;
-        static constexpr int N_ACTIONS = 2;
+        static constexpr double EPSILON = 0.01;
         static constexpr double LAMBDA = 0.5;
         bool traces;
         int state_count;
@@ -24,16 +24,14 @@ class qlearning_agent {
         unordered_map<string, unordered_map<int, double> > Q_TABLE;
         unordered_map<string, unordered_map<int, double> > TRACES;
         vector<string> iteration_history;
+        int greedy_action(string state);
+        int e_greedy_policy(string state);
+        string create_state_action_pair(string state, int action);
 
     public:
         qlearning_agent(bool eligibility_traces);
         int act();
-        void update_qtable(int xdif, int ydif, int velocity, double reward, bool dead, bool greedy);
-        string create_state_action_pair(string state, int action);
-        int greedy_action(string state);
-        int e_greedy_policy(string state);
-        string create_state(int xdif, int ydif, int velocity);
-        void print_count();
+        void update(int xdif, int ydif, int velocity, double reward, bool dead, bool greedy);
         void save_qvalues_to_file();
         void load_qtables_from_file(string filename);
 };

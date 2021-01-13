@@ -3,30 +3,12 @@
 #include <fstream>
 #include "qlearning_agent.hpp"
 
-qlearning_agent::qlearning_agent(bool eligibility_traces) {
-    state_count = 0;
+qlearning_agent::qlearning_agent(bool eligibility_traces): agent() {
     srand(time(NULL));
     next_state = "starting_state";
     next_action = e_greedy_policy(next_state);
     traces = eligibility_traces;
 
-}
-
-string qlearning_agent::create_state(int xdif, int ydif, int velocity) {
-    if (xdif <= 500) {
-        xdif = xdif - (xdif % 15);
-        ydif = ydif - (ydif % 15);
-        //velocity = velocity - (velocity); //edit
-    } else {
-        //xdif = xdif - (xdif % 100);
-        xdif = 1234;
-        ydif = ydif - (ydif % 150);
-        velocity = velocity - (velocity % 2);
-    }
-
-    string state = to_string(xdif) + "_" + to_string(ydif) + "_" + to_string(velocity);
-    //std::cout << state << '\n';
-    return state;
 }
 
 string qlearning_agent::create_state_action_pair(string state, int action) {
@@ -41,7 +23,7 @@ int qlearning_agent::act() {
 }
 
 
-void qlearning_agent::update_qtable(int xdif, int ydif, int velocity, double reward, bool dead, bool greedy) {
+void qlearning_agent::update(int xdif, int ydif, int velocity, double reward, bool dead, bool greedy) {
     next_state = create_state(xdif, ydif, velocity);
     if (next_state == last_state) return;
 
@@ -163,4 +145,3 @@ void qlearning_agent::load_qtables_from_file(string filename) {
     } else cout << "Unable to open file";
 }
 
-void qlearning_agent::print_count(){std::cout << "state_count: "<< state_count << '\n';}
