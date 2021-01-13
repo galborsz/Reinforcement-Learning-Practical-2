@@ -166,27 +166,42 @@ int main() {
 	game.highscoreText.setFillColor(Color::White);
 	game.highscoreText.move(30, 80);
 
-	//INITIALIZE LEARNING BOT
-	qlearning_agent *agent = new qlearning_agent();
-
 	//declaring needed variables
 	int xdif, ydif;
 	double reward;
-
-	//show window
 	int iteration = 0;
+
+	//experiment parameters
 	int interation_limit = 1000000;
 	bool disp = false;
 	bool greedy = false;
+	bool eligibility_traces = false;
+	bool run_from_file = false;
 
+	//INITIALIZE LEARNING BOT
+	qlearning_agent *agent = new qlearning_agent(eligibility_traces);
+
+	if (run_from_file) {
+		agent->load_qtables_from_file("qvalues");
+	}
 
 	// main loop
 	while (iteration != interation_limit) { //window.isOpen()
 
 
-		if (iteration == interation_limit-1) {
+		if (iteration > interation_limit-100) {
 			greedy = true;
 			sounds.ching.play();
+		}
+
+		//move flappy according to agent policy
+		if (game.gameState == started) {
+			if (agent->act()) {
+				flappy.v = -8;
+				//sounds.hop.play();
+			}
+			flappy.sprite.move(0, flappy.v);
+			flappy.v += 0.5;
 		}
 
 		if (game.gameState == gameover) {
@@ -257,7 +272,6 @@ int main() {
 			pipes.push_back(pipeU);
 		}
 
-		calculate_state_xy(xdif, ydif);
 
 		// move pipes
 		if (game.gameState == started) {
@@ -284,16 +298,6 @@ int main() {
 
 
 
-		//move flappy according to agent policy
-		if (game.gameState == started) {
-			if ((!greedy && agent->act(xdif, ydif, flappy.v)) || (greedy && agent->actgreedy(xdif, ydif, flappy.v))) {
-				flappy.v = -8;
-				//sounds.hop.play();
-			}
-			flappy.sprite.move(0, flappy.v);
-			flappy.v += 0.5;
-		}
-
 		// update flappy
 		float fx = flappy.sprite.getPosition().x;
 		float fy = flappy.sprite.getPosition().y;
@@ -304,7 +308,7 @@ int main() {
 			if (fy < 0) {
 				flappy.sprite.setPosition(250, 0);
 				flappy.v = 0;
-				game.gameState = gameover; //EDIT
+				//game.gameState = gameover; //EDIT
 			} else if (fy > 600) {
 				flappy.v = 0;
 				game.gameState = gameover;
@@ -351,12 +355,12 @@ int main() {
 			reward = 0;
 		}
 
-		//recalculating xdif and ydif
+		//calculating xdif and ydif
 		calculate_state_xy(xdif, ydif);
 
 		//update qlearning_agent
 		//if (!greedy)
-		agent->update_qtable(xdif, ydif, flappy.v, reward);
+		agent->update_qtable(xdif, ydif, flappy.v, reward, (game.gameState == gameover) ? true : false, greedy);
 
 		// events
 		Event event;
@@ -414,6 +418,8 @@ int main() {
 	}
 
 	agent->print_count();
+
+	agent->save_qvalues_to_file();
 
 	delete agent;
 

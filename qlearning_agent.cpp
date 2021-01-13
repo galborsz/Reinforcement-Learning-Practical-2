@@ -1,80 +1,83 @@
 #include <iostream>
 #include <stdlib.h>
+#include <fstream>
 #include "qlearning_agent.hpp"
 
-qlearning_agent::qlearning_agent() {
+qlearning_agent::qlearning_agent(bool eligibility_traces) {
     state_count = 0;
     srand(time(NULL));
+    next_state = "starting_state";
+    next_action = e_greedy_policy(next_state);
+    traces = eligibility_traces;
+
 }
 
 string qlearning_agent::create_state(int xdif, int ydif, int velocity) {
     if (xdif <= 500) {
-        xdif = xdif - (xdif % 10);
-        ydif = ydif - (ydif % 10);
+        xdif = xdif - (xdif % 15);
+        ydif = ydif - (ydif % 15);
         //velocity = velocity - (velocity); //edit
     } else {
         //xdif = xdif - (xdif % 100);
         xdif = 1234;
-        ydif = ydif - (ydif % 100);
-        velocity = velocity - (velocity % 5);
+        ydif = ydif - (ydif % 150);
+        velocity = velocity - (velocity % 2);
     }
-
-
 
     string state = to_string(xdif) + "_" + to_string(ydif) + "_" + to_string(velocity);
     //std::cout << state << '\n';
     return state;
 }
 
-int qlearning_agent::act(int xdif, int ydif, int velocity) {
-    //two next lines can be moved to the end of update
-    string state = create_state(xdif, ydif, velocity);
-    if (state == last_state) return 0;
-    last_state = state;
-    last_action = e_greedy_policy(state);
-    return last_action;
+string qlearning_agent::create_state_action_pair(string state, int action) {
+    return state + ":" + to_string(action);
+}
+
+int qlearning_agent::act() {
+    if (next_state == last_state) return 0;
+    last_state = next_state;
+    last_action = next_action;
+    return next_action;
 }
 
 
-int qlearning_agent::actgreedy(int xdif, int ydif, int velocity) {
-    string state = create_state(xdif, ydif, velocity);
-    if (state == last_state) return 0;
-    int action = greedy_action(state);
-    return action;
-}
+void qlearning_agent::update_qtable(int xdif, int ydif, int velocity, double reward, bool dead, bool greedy) {
+    next_state = create_state(xdif, ydif, velocity);
+    if (next_state == last_state) return;
 
+    string last_state_action_pair = create_state_action_pair(last_state, last_action);
+    iteration_history.push_back(last_state_action_pair);
 
-void qlearning_agent::update_qtable(int xdif, int ydif, int velocity, double reward) {
-    string new_state = create_state(xdif, ydif, velocity);
-    if (new_state == last_state) return;
-	int new_action = greedy_action(new_state);
+	int greedy_act = greedy_action(next_state); //A*
+    next_action = e_greedy_policy(next_state); //A'
 
-    //std::cout << "ls " << last_state << " maxa " << last_action << " Q " << Q_TABLE[last_state][last_action] <<  '\n';
-    //std::cout << "reward " << reward << '\n';
+    if (greedy) {
+        next_action = greedy_act;
+    }
 
-    double update = ALPHA * (reward + GAMMA * (Q_TABLE[new_state][new_action] - Q_TABLE[last_state][last_action]));
-    //std::cout << "ALPHA " << ALPHA << '\n';
-    //std::cout << "GAMMA " << GAMMA << '\n';
-    //std::cout << "Q_TABLE[new_state][new_action] " << Q_TABLE[new_state][new_action] << '\n';
-    //std::cout << "Q_TABLE[last_state][last_action]" << Q_TABLE[last_state][last_action] << '\n';
-    //std::cout << "GAMMA * Q_TABLE[new_state][new_action] - Q_TABLE[last_state][last_action] " << GAMMA * (Q_TABLE[new_state][new_action] - Q_TABLE[last_state][last_action]) << '\n';
-    //std::cout << "new_state " << new_state << " new_action " << new_action << " Q " << Q_TABLE[new_state][new_action] <<  '\n';
-    //std::cout << "update " << update << '\n';
+    double update = ALPHA * (reward + GAMMA * (Q_TABLE[next_state][greedy_act] - Q_TABLE[last_state][last_action]));
 
 	// Update Q(S,A)
-	Q_TABLE[last_state][last_action] += update;
-        //Q_TABLE_COUNT[last_state][last_action] += 1;
-        //Q_TABLE[last_state][last_action] += 1;
 
-    //std::cout << "ls " << last_state << " maxa " << last_action << " Q " << Q_TABLE[last_state][last_action] <<  '\n';
+    if (traces) {
+        TRACES[last_state][last_action] += 1; //accumulating traces
 
-    //std::cout << "\n" << '\n';
+        string delimiter = ":";
+        for (auto & past_state_action_pairs : iteration_history) {
+            size_t pos = 0;
+            pos = past_state_action_pairs.find(delimiter);
+            string past_state = past_state_action_pairs.substr(0, pos);
+            past_state_action_pairs.erase(0, pos + delimiter.length());
+            int past_action = atoi(past_state_action_pairs.c_str());
 
-    /*
-    std::cout << "ls " << last_state << " la " << 0 << " Q " << Q_TABLE[last_state][0] <<  '\n';
-    std::cout << "ls " << last_state << " la " << 1 << " Q " << Q_TABLE[last_state][1] <<  '\n';
-    std::cout << "ls " << last_state << " maxa " << last_action << " Q " << Q_TABLE[last_state][last_action] <<  '\n';
-    */
+            //update
+            Q_TABLE[past_state][past_action] += update * TRACES[past_state][past_action];
+            if (next_action == greedy_act) TRACES[past_state][past_action] = GAMMA * LAMBDA * TRACES[past_state][past_action];
+            else TRACES[past_state][past_action] = 0;
+        }
+
+        if (dead) iteration_history.clear();
+    } else Q_TABLE[last_state][last_action] += update;
 
 }
 
@@ -84,12 +87,14 @@ int qlearning_agent::greedy_action(string state) {
 
     if (Q_TABLE.find(state) == Q_TABLE.end() && Q_TABLE[state].find(0) == Q_TABLE[state].end()) { //looks for new state and creates it if it doesnt exist
         Q_TABLE[state][0] = 0;
+        if (traces) TRACES[state][0] = 0;
             //Q_TABLE_COUNT[new_state][new_action] = 0;
         state_count++;
     }
 
     if (Q_TABLE.find(state) == Q_TABLE.end() && Q_TABLE[state].find(1) == Q_TABLE[state].end()) { //looks for new state and creates it if it doesnt exist
         Q_TABLE[state][1] = 0;
+        if (traces)TRACES[state][1] = 0;
             //Q_TABLE_COUNT[new_state][new_action] = 0;
         state_count++;
     }
@@ -111,6 +116,7 @@ int qlearning_agent::e_greedy_policy(string state) {
         int random_action = rand() % N_ACTIONS;
         if (Q_TABLE.find(state) == Q_TABLE.end() && Q_TABLE[state].find(random_action) == Q_TABLE[state].end()) { //looks for new state and creates it if it doesnt exist
             Q_TABLE[state][random_action] = 0;
+            if (traces) TRACES[state][random_action] = 0;
                 //Q_TABLE_COUNT[new_state][new_action] = 0;
             state_count++;
         }
@@ -120,6 +126,41 @@ int qlearning_agent::e_greedy_policy(string state) {
 	}
 }
 
-void qlearning_agent::print_count(){std::cout << "state_count: "<< state_count << '\n';}
+void qlearning_agent::save_qvalues_to_file() {
+ 	//csv file configuration
+    string filename = "qvalues";
+    ofstream myfile(filename + ".csv");
 
-void qlearning_agent::clearQtable(){Q_TABLE.clear();}
+    myfile << "GAMMA" << GAMMA << "ALPHA" << ALPHA << "EPSILON" << EPSILON << endl;
+
+	for (auto const& x : Q_TABLE) {
+        for (auto const& y : x.second) {
+            myfile << x.first << ':' << y.first << ':' << y.second << endl;
+        }
+	}
+
+	myfile.close();
+
+}
+
+void qlearning_agent::load_qtables_from_file(string filename) {
+    string line;
+    string delimiter = ":";
+    ifstream myfile (filename + ".csv");
+    if (myfile.is_open()) {
+        while ( getline (myfile, line) ) {
+            size_t pos = 0;
+            pos = line.find(delimiter);
+            string state = line.substr(0, pos);
+            line.erase(0, pos + delimiter.length());
+            pos = line.find(delimiter);
+            int action = atoi((line.substr(0, pos)).c_str());
+            line.erase(0, pos + delimiter.length());
+            double qvalue = atof(line.c_str());
+            Q_TABLE[state][action] = qvalue;
+        }
+        myfile.close();
+    } else cout << "Unable to open file";
+}
+
+void qlearning_agent::print_count(){std::cout << "state_count: "<< state_count << '\n';}
