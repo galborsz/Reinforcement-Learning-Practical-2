@@ -23,10 +23,9 @@ class qlearning_agent: public agent {
         unordered_map<string, unordered_map<int, double> > Q_TABLE;
         unordered_map<string, unordered_map<int, double> > TRACES;
         vector<string> iteration_history;
-        int greedy_action(string state);
-        int e_greedy_policy(string state);
+        //int greedy_action(string state);
+        //int e_greedy_policy(string state);
         string create_state_action_pair(string state, int action);
-        void initializeNewStates(string state, int action);
 
     public:
         qlearning_agent(bool eligibility_traces);

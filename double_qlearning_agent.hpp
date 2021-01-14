@@ -21,9 +21,8 @@ class double_qlearning_agent: public agent {
         string next_state;
         unordered_map<string, unordered_map<int, double> > Q_TABLE1;
         unordered_map<string, unordered_map<int, double> > Q_TABLE2;
-        int greedy_action(string state);
-        int e_greedy_policy(string state);
-        void initializeNewStates(string state, int action);
+        //int greedy_action(string state);
+        //int e_greedy_policy(string state);
         int greedy_action_per_qtable(unordered_map<string, unordered_map<int, double> > Q_TABLE, string state);
 
     public:

@@ -189,44 +189,32 @@ int main() {
 	double reward;
 	int iteration = 0;
 	vector<double> total_score;
+	agent* agent1;
 
 	//experiment parameters
 	int agent_type = 1; // 1 = qlearning, 2 = sarsa, 3 = double qlearning
-	int iteration_limit = 50000;
+	int iteration_limit = 100000;
 	bool disp = false;
 	bool greedy = false;
 	bool eligibility_traces = false;
 	bool run_from_file = false;
 
 	//INITIALIZE LEARNING BOT
-	agent *agent1;
-	/* switch case doesnt work for some reason
 	switch(agent_type) {
-        case 1: { 
+        case 1: 
             agent1 = new qlearning_agent(eligibility_traces);
-        }
-        case 2: { 
+			break;
+        case 2:
             agent1 = new sarsa_agent();
-        }
-        case 3: {
+			break;
+        case 3: 
             agent1 = new double_qlearning_agent();
-        }
-        default: {
+			break;
+        default: 
             cout << "Invalid agent type code";
-        }
     }
-	*/
 
-	if (agent_type == 1) {
-		agent1 = new qlearning_agent(eligibility_traces);
 
-	} else if (agent_type == 2) {
-		agent1 = new sarsa_agent();
-
-	} else if (agent_type == 3) {
-		agent1 = new double_qlearning_agent();
-	}
- 
 
 	if (run_from_file) {
 		agent1->load_qtables_from_file("qvalues");

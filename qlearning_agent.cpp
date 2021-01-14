@@ -6,7 +6,8 @@
 qlearning_agent::qlearning_agent(bool eligibility_traces): agent() {
     srand(time(NULL));
     next_state = "starting_state";
-    next_action = e_greedy_policy(next_state);
+    //next_action = e_greedy_policy(next_state);
+    next_action = 1;
     traces = eligibility_traces;
 
 }
@@ -27,14 +28,39 @@ void qlearning_agent::update(int xdif, int ydif, int velocity, double reward, bo
     next_state = create_state(xdif, ydif, velocity);
     if (next_state == last_state) return;
 
+    /*
+
 	int greedy_act = greedy_action(next_state); //A*
     next_action = e_greedy_policy(next_state); //A'
 
     if (greedy) {
         next_action = greedy_act;
     }
+    */
 
-    double update = ALPHA * (reward + GAMMA * (Q_TABLE[next_state][greedy_act] - Q_TABLE[last_state][last_action]));
+    double QS0 = Q_TABLE[next_state][0];
+    double QS1 = Q_TABLE[next_state][1];
+
+    int greedy_act;
+    if (QS0 >= QS1) { //doesnt flap in case of tie
+        greedy_act = 0;
+    } else {
+        greedy_act = 1;
+    }
+
+    if (greedy) {
+        next_action = greedy_act;
+    } else { //epsilon greedy
+        double random = (double)rand() / RAND_MAX;
+	    if (random < EPSILON){
+            int random_action = rand() % N_ACTIONS;
+		    next_action = random_action;
+	    } else {
+		    next_action = greedy_act;
+	    }
+    }
+
+    double update = ALPHA * (reward + GAMMA * Q_TABLE[next_state][greedy_act] - Q_TABLE[last_state][last_action]);
 
 	// Update Q(S,A)
 
@@ -62,42 +88,29 @@ void qlearning_agent::update(int xdif, int ydif, int velocity, double reward, bo
 
 }
 
-void qlearning_agent::initializeNewStates(string state, int action) {
-    if (Q_TABLE.find(state) == Q_TABLE.end() && Q_TABLE[state].find(0) == Q_TABLE[state].end()) { //looks for new state and creates it if it doesnt exist
-        if (traces) TRACES[state][action] = 0;
-		Q_TABLE[state][action] = 0;
-        state_count++;
-    }
-}
 
-
-//returns greedy action given the state
+//returns greedy action given the state 
+/*
 int qlearning_agent::greedy_action(string state) {
-
-    initializeNewStates(state, 0);
-	initializeNewStates(state, 1);
-
     if (Q_TABLE[state][0] >= Q_TABLE[state][1]) { //doesnt flap in case of tie
         return 0;
     } else {
         return 1;
     }
-}
+} */
 
 /* Performs greedy policy. With prob epsilon pick action
 belonging to maximum action-value. With prob 1-epsilon
-pick a random action. */
+pick a random action. */ /*
 int qlearning_agent::e_greedy_policy(string state) {
 	double random = (double)rand() / RAND_MAX;
-
 	if (random < EPSILON){
         int random_action = rand() % N_ACTIONS;
-        initializeNewStates(state, random_action);
 		return random_action;
 	} else {
 		return greedy_action(state);
 	}
-}
+} */
 
 
 void qlearning_agent::save_qvalues_to_file() {
@@ -115,7 +128,7 @@ void qlearning_agent::save_qvalues_to_file() {
 
 	myfile.close();
 
-}
+} 
 
 void qlearning_agent::load_qtables_from_file(string filename) {
     string line;
@@ -136,28 +149,4 @@ void qlearning_agent::load_qtables_from_file(string filename) {
         myfile.close();
     } else cout << "Unable to open file";
 }
-
-/*
-void ucb_agent::updateActionValueEstimates(int action, float reward) {
-    action_counts[action]++;  
-    action_values_estimates[action] += (reward - action_values_estimates[action])/(action_counts[action]);
-    t++;
-}
-
-int ucb_agent::chooseAction() {
-    vector<int>::iterator location = find(state_action_counts.begin(), state_action_counts.end(), 0);
-    if (location != state_action_counts.end()) {
-        return location - state_action_counts.begin();
-    }
-    float max_value = -INFINITY;
-    int max_value_index;
-    for (int i = 0; i < N_ACTIONS; i++) {
-        float new_value = action_values_estimates[i] + c*(sqrt(log(t)/action_counts[i]));
-        if(max_value < new_value) {
-            max_value = new_value;
-            max_value_index = i;
-        } 
-    }
-    return max_value_index;
-} */
 

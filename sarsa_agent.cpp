@@ -22,7 +22,7 @@ void sarsa_agent::update(int xdif, int ydif, int velocity, double reward, bool d
     if (greedy) next_action = greedy_action(next_state);
     else next_action = e_greedy_policy(next_state);
 
-    double update = ALPHA * (reward + GAMMA * (Q_TABLE[next_state][next_action] - Q_TABLE[last_state][last_action]));
+    double update = ALPHA * (reward + GAMMA * Q_TABLE[next_state][next_action] - Q_TABLE[last_state][last_action]);
 
 	//Update Q(S,A)
 	Q_TABLE[last_state][last_action] += update;
@@ -30,19 +30,6 @@ void sarsa_agent::update(int xdif, int ydif, int velocity, double reward, bool d
 
 //returns greedy action given the state
 int sarsa_agent::greedy_action(string state) {
-
-    if (Q_TABLE.find(state) == Q_TABLE.end() && Q_TABLE[state].find(0) == Q_TABLE[state].end()) { //looks for new state and creates it if it doesnt exist
-        Q_TABLE[state][0] = 0;
-            //Q_TABLE_COUNT[new_state][new_action] = 0;
-        state_count++;
-    }
-
-    if (Q_TABLE.find(state) == Q_TABLE.end() && Q_TABLE[state].find(1) == Q_TABLE[state].end()) { //looks for new state and creates it if it doesnt exist
-        Q_TABLE[state][1] = 0;
-            //Q_TABLE_COUNT[new_state][new_action] = 0;
-        state_count++;
-    }
-
     if (Q_TABLE[state][0] >= Q_TABLE[state][1]) { //doesnt flap in case of tie
         return 0;
     } else {
@@ -56,14 +43,8 @@ belonging to maximum action-value. With prob 1-epsilon
 pick a random action. */
 int sarsa_agent::e_greedy_policy(string state) {
 	double random = (double)rand() / RAND_MAX;
-
 	if (random < EPSILON){
         int random_action = rand() % N_ACTIONS;
-        if (Q_TABLE.find(state) == Q_TABLE.end() && Q_TABLE[state].find(random_action) == Q_TABLE[state].end()) { //looks for new state and creates it if it doesnt exist
-            Q_TABLE[state][random_action] = 0;
-                //Q_TABLE_COUNT[new_state][new_action] = 0;
-            state_count++;
-        }
 		return random_action;
 	} else {
 		return greedy_action(state);
