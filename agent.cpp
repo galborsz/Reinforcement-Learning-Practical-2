@@ -5,7 +5,7 @@ using namespace std;
 
 agent::agent() {
     state_count = 0;
-    EPSILON = 1;
+    EPSILON = 0.1;
 }
 
 int agent::act() {

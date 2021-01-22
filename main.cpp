@@ -15,6 +15,7 @@
 #include "agent.hpp"
 #include "sarsa_agent.hpp"
 #include "double_qlearning_agent.hpp"
+#include "expected_sarsa_agent.hpp"
 
 using namespace sf;
 using namespace std;
@@ -192,10 +193,10 @@ int main() {
 	agent* agent1;
 
 	//experiment parameters
-	int agent_type = 1; // 1 = qlearning, 2 = sarsa, 3 = double qlearning
-	int iteration_limit = 100000;
+	int agent_type = 4; // 1 = qlearning, 2 = sarsa, 3 = double qlearning, 4 = expected sarsa
+	int iteration_limit = 15000;
 	bool disp = false;
-	bool greedy = false;
+	bool greedy = true;
 	bool eligibility_traces = false;
 	bool run_from_file = false;
 
@@ -203,12 +204,19 @@ int main() {
 	switch(agent_type) {
         case 1: 
             agent1 = new qlearning_agent(eligibility_traces);
+			cout<<"Q-Learning agent"<<endl;
 			break;
         case 2:
             agent1 = new sarsa_agent();
+			cout<<"Sarsa agent"<<endl;
 			break;
         case 3: 
             agent1 = new double_qlearning_agent();
+			cout<<"Double Q-Learning agent"<<endl;
+			break;
+		case 4: 
+            agent1 = new expected_sarsa_agent();
+			cout<<"Expected sarsa agent"<<endl;
 			break;
         default: 
             cout << "Invalid agent type code";
@@ -455,7 +463,7 @@ int main() {
 	}
 
 	agent1->print_state_count();
-	saveData(total_score, "total_score_qlearning_greedy.txt");
+	saveData(total_score, "total_score_expected_sarsa_epsilon_greedy_0.1.txt");
 
 	agent1->save_qvalues_to_file();
 
