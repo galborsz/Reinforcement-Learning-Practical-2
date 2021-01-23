@@ -73,16 +73,6 @@ void expected_sarsa_agent::update(int xdif, int ydif, int velocity, double rewar
         }
     }
 
-    //cout<<"meanQ: "<<meanQ<<endl;
-
-    /*# mean Q(S',a) for all a
-        meanQ = 0; aMax = np.argmax(self.Q_FUN[state, :])
-        for a in range(self.N_ACTIONS):
-          if a == aMax:
-            meanQ += (self.EPSILON/self.N_ACTIONS + 1 - self.EPSILON) * self.Q_FUN[next_state, a]
-          else:
-            meanQ += (self.EPSILON/self.N_ACTIONS) * self.Q_FUN[next_state, a]*/
-
     double update = ALPHA * (reward + GAMMA * meanQ - Q_TABLE[last_state][last_action]);
 
 	// Update Q(S,A)

@@ -20,7 +20,6 @@ class expected_sarsa_agent: public agent {
         int next_action;
         string next_state;
         unordered_map<string, unordered_map<int, double> > Q_TABLE;
-        unordered_map<string, unordered_map<int, double> > TRACES;
         vector<string> iteration_history;
         //int greedy_action(string state);
         //int e_greedy_policy(string state);

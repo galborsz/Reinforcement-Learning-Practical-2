@@ -1,11 +1,13 @@
 #include <iostream>
+#include <iomanip>
+#include <fstream>
 #include "agent.hpp"
 
 using namespace std;
 
 agent::agent() {
     state_count = 0;
-    EPSILON = 0.1;
+    EPSILON = 1;
 }
 
 int agent::act() {
@@ -39,7 +41,7 @@ string agent::create_state(int xdif, int ydif, int velocity) {
 
 void agent::print_state_count(){std::cout << "state_count: "<< state_count << '\n';}
 
-void agent::save_qvalues_to_file() {cout << "save failed, not implemented for this agent" << endl;}
+void agent::save_qvalues_to_file() {cout << "qvalues save failed, not implemented for this agent" << endl;}
 
 void agent::load_qtables_from_file(string filename) {cout << "load failed, not implemented for this agent" << endl;}
 
