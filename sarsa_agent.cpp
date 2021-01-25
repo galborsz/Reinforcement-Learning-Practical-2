@@ -21,7 +21,6 @@ void sarsa_agent::update(int xdif, int ydif, int velocity, double reward, bool d
     if (next_state == last_state) return;
     if (greedy) next_action = greedy_action(next_state);
     else next_action = e_greedy_policy(next_state);
-
     double update = ALPHA * (reward + GAMMA * Q_TABLE[next_state][next_action] - Q_TABLE[last_state][last_action]);
 
 	//Update Q(S,A)

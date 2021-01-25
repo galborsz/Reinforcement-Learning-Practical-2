@@ -128,8 +128,8 @@ void save_avg_total_score_to_file(vector<int> data, string fileName){
     MyFile.close();
 }
 
-void divide(int a) {
-    std::cout << a/10 << "\n";
+float divide(int a) {
+    return a/10;
 }
 
 int main() {
@@ -142,7 +142,7 @@ int main() {
 	bool eligibility_traces = false;
 	bool run_from_file = false;
 
-	vector<int> sum_total_score;
+	vector<int> sum_total_score (iteration_limit, 0);
 	string exploration;
 	string agent_name;
 	if (greedy) exploration = "greedy";
@@ -150,6 +150,8 @@ int main() {
 
 	for (int times=0; times<10; times++){
 		cout << "Times: " << times << endl;
+		greedy = false;
+
 		//srand(0);
 		// create the window and set general settings. Plant the seeds
 		RenderWindow window(VideoMode(1000, 600), "Flappy Bird");
@@ -212,7 +214,7 @@ int main() {
 		int xdif, ydif;
 		double reward;
 		int iteration = 0;
-		vector<int> total_score;
+		vector<int> total_score (iteration_limit, 0);
 		agent* agent1;
 
 		//INITIALIZE LEARNING BOT
@@ -266,7 +268,7 @@ int main() {
 			}
 
 			if (game.gameState == gameover) {
-				total_score.push_back(game.score);
+				total_score[iteration] = game.score;
 				game.gameState = started;
 				flappy.sprite.setPosition(250, 300);
 				game.frames = 0; //EDIT
@@ -482,7 +484,7 @@ int main() {
 
 		agent1->print_state_count();
 		agent1->save_qvalues_to_file();
-		std::transform (sum_total_score.begin(), sum_total_score.end(), total_score.begin(), total_score.begin(), std::plus<int>());
+		std::transform (sum_total_score.begin(), sum_total_score.end(), total_score.begin(), sum_total_score.begin(), std::plus<int>());
 		delete agent1;
 	}
 
