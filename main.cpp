@@ -135,8 +135,10 @@ float divide(int a) {
 int main() {
 
 	//experiment parameters
-	int agent_type = 2; // 1 = qlearning, 2 = sarsa, 3 = double qlearning, 4 = expected sarsa
-	int iteration_limit = 25000;
+	int agent_type = 1; // 1 = qlearning, 2 = sarsa, 3 = double qlearning, 4 = expected sarsa
+	int iteration_limit = 100000;
+	int number_of_experiments = 5;
+	double rate_of_decay = 0.0001; //highly dependate on iteration limit
 	bool disp = false;
 	bool greedy = false;
 	bool eligibility_traces = false;
@@ -148,7 +150,7 @@ int main() {
 	if (greedy) exploration = "greedy";
 	else exploration = "epsilon_greedy";
 
-	for (int times=0; times<10; times++){
+	for (int times=0; times < number_of_experiments; times++){
 		cout << "Times: " << times << endl;
 		greedy = false;
 
@@ -251,11 +253,11 @@ int main() {
 
 		// main loop
 		while (iteration != iteration_limit) { //window.isOpen()
-
+			/*
 			if (iteration > iteration_limit-100) {
 				greedy = true;
 				sounds.ching.play();
-			}
+			} */
 
 			//move flappy according to agent policy
 			if (game.gameState == started) {
@@ -275,7 +277,7 @@ int main() {
 				game.score = 0;
 				pipes.clear();
 				iteration++;
-				agent1->set_epsilon(iteration);
+				agent1->set_epsilon(iteration, rate_of_decay);
 				double percentage = ((double)iteration/(double)iteration_limit);
 				printProgress(percentage);
 			}

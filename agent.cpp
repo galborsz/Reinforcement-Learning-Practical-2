@@ -19,10 +19,9 @@ void agent::update(int xdif, int ydif, int velocity, double reward, bool dead, b
     cout << "failed update, implement for agent" << endl;
 }
 
-void agent::set_epsilon(int iteration) {
-	double iter = (double)iteration /10;
-	if (iter < 0) iter = 1;
-	EPSILON = 1/iter;
+void agent::set_epsilon(int iteration, double rate_of_decay) {
+    //exponnential decay
+	EPSILON = exp(-iteration*rate_of_decay);
 }
 
 string agent::create_state(int xdif, int ydif, int velocity) {
