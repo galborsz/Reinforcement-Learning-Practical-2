@@ -21,7 +21,7 @@ void agent::update(int xdif, int ydif, int velocity, double reward, bool dead, b
 
 void agent::set_epsilon(int iteration, double rate_of_decay) {
     //exponnential decay
-	EPSILON = exp(-iteration*rate_of_decay);
+	EPSILON = exp(-1*(double)iteration*rate_of_decay);
 }
 
 string agent::create_state(int xdif, int ydif, int velocity) {

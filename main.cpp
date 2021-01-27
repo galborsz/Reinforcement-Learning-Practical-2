@@ -10,6 +10,7 @@
 #include <string>
 #include <iomanip>
 #include <fstream>
+#include <numeric>  
 
 #include "qlearning_agent.hpp"
 #include "agent.hpp"
@@ -136,25 +137,24 @@ int main() {
 
 	//experiment parameters
 	int agent_type = 1; // 1 = qlearning, 2 = sarsa, 3 = double qlearning, 4 = expected sarsa
-	int iteration_limit = 100000;
-	int number_of_experiments = 5;
-	double rate_of_decay = 0.0001; //highly dependate on iteration limit
+	int iteration_limit = 10000;
+	int number_of_experiments = 40;
+	double rate_of_decay = 0.01; //highly dependate on iteration limit
 	bool disp = false;
 	bool greedy = false;
 	bool eligibility_traces = false;
 	bool run_from_file = false;
 
 	vector<int> sum_total_score (iteration_limit, 0);
+	vector<int> highscores;
 	string exploration;
 	string agent_name;
 	if (greedy) exploration = "greedy";
 	else exploration = "epsilon_greedy";
 
 	for (int times=0; times < number_of_experiments; times++){
-		cout << "Times: " << times << endl;
-		greedy = false;
+		cout << "Experiment: " << times << endl;
 
-		//srand(0);
 		// create the window and set general settings. Plant the seeds
 		RenderWindow window(VideoMode(1000, 600), "Flappy Bird");
 		window.setFramerateLimit(100);
@@ -175,6 +175,7 @@ int main() {
 		textures.flappy[0].loadFromFile("./images/flappy1.png");
 		textures.flappy[1].loadFromFile("./images/flappy2.png");
 		textures.flappy[2].loadFromFile("./images/flappy3.png");
+
 
 		// load font, set positions, scales etc
 		game.font.loadFromFile("./fonts/flappy.ttf");
@@ -211,6 +212,8 @@ int main() {
 		flappy.sprite.setScale(2, 2);
 		flappy.v = 0;
 		flappy.frame = 0;
+
+		//////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
 		//declaring needed variables
 		int xdif, ydif;
@@ -253,11 +256,6 @@ int main() {
 
 		// main loop
 		while (iteration != iteration_limit) { //window.isOpen()
-			/*
-			if (iteration > iteration_limit-100) {
-				greedy = true;
-				sounds.ching.play();
-			} */
 
 			//move flappy according to agent policy
 			if (game.gameState == started) {
@@ -310,7 +308,7 @@ int main() {
 
 					if (game.score > game.highscore) {
 						game.highscore = game.score;
-						cout << "Iteration: " << iteration << ", Score: " << to_string(game.score) << ", HighScore: " << to_string(game.highscore) << endl;
+						//cout << "Iteration: " << iteration << ", Score: " << to_string(game.score) << ", HighScore: " << to_string(game.highscore) << endl;
 					}
 					break;
 				}
@@ -442,14 +440,6 @@ int main() {
 						event.key.code == Keyboard::F) {
 					disp = false;
 				} else if (event.type == Event::KeyPressed &&
-						event.key.code == Keyboard::A) {
-					greedy = true;
-					std::cout << "greedy" << '\n';
-				} else if (event.type == Event::KeyPressed &&
-						event.key.code == Keyboard::S) {
-					greedy = false;
-					std::cout << "explore" << '\n';
-				} else if (event.type == Event::KeyPressed &&
 						event.key.code == Keyboard::P) {
 					std::cout << "xdif" << xdif << "ydif" << ydif << '\n';
 				}
@@ -474,6 +464,7 @@ int main() {
 				// draw scores
 				window.draw(game.scoreText);
 				window.draw(game.highscoreText);
+				
 
 
 				window.display();
@@ -484,7 +475,10 @@ int main() {
 
 		}
 
-		agent1->print_state_count();
+		highscores.push_back(game.highscore);
+		cout << "Highscore: " << game.highscore << endl;
+
+		//agent1->print_state_count();
 		agent1->save_qvalues_to_file();
 		std::transform (sum_total_score.begin(), sum_total_score.end(), total_score.begin(), sum_total_score.begin(), std::plus<int>());
 		delete agent1;
@@ -493,5 +487,7 @@ int main() {
 	std::for_each(sum_total_score.begin(), sum_total_score.end(), &divide);
 	save_avg_total_score_to_file(sum_total_score, "avg_total_score_" + agent_name + "_" + exploration + ".txt");
 
+	int average_highscore = accumulate( highscores.begin(), highscores.end(), 0.0)/highscores.size(); 
+	cout << "average highscore:" << average_highscore << endl;
 	return 0;
 }
