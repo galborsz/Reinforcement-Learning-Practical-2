@@ -10,6 +10,7 @@
 #include <string>
 #include <iomanip>
 #include <fstream>
+#include <algorithm>
 
 #include "qlearning_agent.hpp"
 #include "agent.hpp"
@@ -30,6 +31,13 @@ void printProgress(double percentage) {
     int rpad = PBWIDTH - lpad;
     printf("\r%3d%% [%.*s%*s]", val, lpad, PBSTR, rpad, "");
     fflush(stdout);
+}
+
+void escriure(vector<float> vec) {
+    for (float e : vec) {
+        cout << " " << e;
+    }
+    cout << endl;
 }
 
 // all textures remain in here. Flappy has 3 textures, which will repeadetly draw, creating the illusion of flying.
@@ -116,7 +124,7 @@ bool collides(float x1, float y1, float w1, float h1, float x2, float y2, float 
 	ydif = ypipe - ypos;
 }
 
-void save_avg_total_score_to_file(vector<int> data, string fileName){
+void save_avg_total_score_to_file(vector<float> data, string fileName){
     // Create and open a text file
     ofstream MyFile(fileName);
     ofstream myfile;
@@ -128,31 +136,27 @@ void save_avg_total_score_to_file(vector<int> data, string fileName){
     MyFile.close();
 }
 
-float divide(int a) {
+float divide(float a) {
     return a/10;
 }
 
 int main() {
 
 	//experiment parameters
-	int agent_type = 1; // 1 = qlearning, 2 = sarsa, 3 = double qlearning, 4 = expected sarsa
-	int iteration_limit = 100000;
-	int number_of_experiments = 5;
-	double rate_of_decay = 0.0001; //highly dependate on iteration limit
+	int agent_type = 2; // 1 = qlearning, 2 = sarsa, 3 = double qlearning, 4 = expected sarsa
+	int iteration_limit = 13000;
+	int number_of_experiments = 10;
+	double rate_of_decay = 0.0009; //highly dependate on iteration limit
 	bool disp = false;
-	bool greedy = false;
 	bool eligibility_traces = false;
 	bool run_from_file = false;
-
-	vector<int> sum_total_score (iteration_limit, 0);
-	string exploration;
+	bool greedy = false;
+	vector<float> sum_total_score (iteration_limit, 0);
+	string exploration = to_string(rate_of_decay);
 	string agent_name;
-	if (greedy) exploration = "greedy";
-	else exploration = "epsilon_greedy";
 
 	for (int times=0; times < number_of_experiments; times++){
 		cout << "Times: " << times << endl;
-		greedy = false;
 
 		//srand(0);
 		// create the window and set general settings. Plant the seeds
@@ -216,7 +220,7 @@ int main() {
 		int xdif, ydif;
 		double reward;
 		int iteration = 0;
-		vector<int> total_score (iteration_limit, 0);
+		vector<float> total_score (iteration_limit, 0);
 		agent* agent1;
 
 		//INITIALIZE LEARNING BOT
@@ -441,7 +445,7 @@ int main() {
 				} else if (event.type == Event::KeyPressed &&
 						event.key.code == Keyboard::F) {
 					disp = false;
-				} else if (event.type == Event::KeyPressed &&
+				} /*else if (event.type == Event::KeyPressed &&
 						event.key.code == Keyboard::A) {
 					greedy = true;
 					std::cout << "greedy" << '\n';
@@ -449,7 +453,7 @@ int main() {
 						event.key.code == Keyboard::S) {
 					greedy = false;
 					std::cout << "explore" << '\n';
-				} else if (event.type == Event::KeyPressed &&
+				}*/ else if (event.type == Event::KeyPressed &&
 						event.key.code == Keyboard::P) {
 					std::cout << "xdif" << xdif << "ydif" << ydif << '\n';
 				}
@@ -486,11 +490,12 @@ int main() {
 
 		agent1->print_state_count();
 		agent1->save_qvalues_to_file();
-		std::transform (sum_total_score.begin(), sum_total_score.end(), total_score.begin(), sum_total_score.begin(), std::plus<int>());
+		std::transform (sum_total_score.begin(), sum_total_score.end(), total_score.begin(), sum_total_score.begin(), std::plus<float>());
 		delete agent1;
 	}
-
-	std::for_each(sum_total_score.begin(), sum_total_score.end(), &divide);
+	vector<float> avg_total_score(iteration_limit, 0);
+	std::transform(sum_total_score.begin(), sum_total_score.end(), avg_total_score.begin(), divide);
+	//std::for_each(sum_total_score.begin(), sum_total_score.end(), divide);
 	save_avg_total_score_to_file(sum_total_score, "avg_total_score_" + agent_name + "_" + exploration + ".txt");
 
 	return 0;

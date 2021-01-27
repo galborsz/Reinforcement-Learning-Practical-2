@@ -4,7 +4,9 @@
 
 sarsa_agent::sarsa_agent(): agent() {
     next_state = "starting_state";
-    next_action = e_greedy_policy(next_state);
+    //if (greedy) next_action = greedy_action(next_state);
+    //next_action = e_greedy_policy(next_state);
+    next_action = 1;
     srand(time(NULL));
 }
 
@@ -19,8 +21,29 @@ void sarsa_agent::update(int xdif, int ydif, int velocity, double reward, bool d
     //Choose A' from S' using policy derived from Q (e.g. e-greedy)
     next_state = create_state(xdif, ydif, velocity);
     if (next_state == last_state) return;
-    if (greedy) next_action = greedy_action(next_state);
-    else next_action = e_greedy_policy(next_state);
+    
+    //if (greedy) next_action = greedy_action(next_state);
+    //else next_action = e_greedy_policy(next_state);
+    double QS0 = Q_TABLE[next_state][0];
+    double QS1 = Q_TABLE[next_state][1];
+
+    int greedy_act;
+    if (QS0 >= QS1) { //doesnt flap in case of tie
+        greedy_act = 0;
+    } else {
+        greedy_act = 1;
+    }
+
+    double random = (double)rand() / RAND_MAX;
+    //cout << "random: " << random << "epsilon: " << EPSILON << endl;
+    if (random < EPSILON){
+        int random_action = rand() % N_ACTIONS;
+        //cout << "random action: " << random_action << endl;
+        next_action = random_action;
+    } else {
+        next_action = greedy_act;
+    }
+
     double update = ALPHA * (reward + GAMMA * Q_TABLE[next_state][next_action] - Q_TABLE[last_state][last_action]);
 
 	//Update Q(S,A)
