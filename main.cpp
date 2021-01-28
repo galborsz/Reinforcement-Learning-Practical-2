@@ -144,11 +144,12 @@ float divide(float a) {
 int main() {
 
 	//experiment parameters
-	int agent_type = 3; // 1 = qlearning, 2 = sarsa, 3 = expected sarsa, 4 = double qlearning
-	string exploration_strategy = "ucb"; // "greedy", "egreedy", "ucb"
-	int iteration_limit = 15000;
-	int number_of_experiments = 1;
+	int agent_type = 2; // 1 = qlearning, 2 = sarsa, 3 = expected sarsa, 4 = double qlearning
+	string exploration_strategy = "egreedy"; // "greedy", "egreedy", "ucb"
+	int iteration_limit = 10000;
+	int number_of_experiments = 20;
 	double rate_of_decay = 0.01; 
+	cout << "Rate of decay: " << rate_of_decay << endl;
 	bool disp = false;
 	bool run_from_file = false;
 	bool save_qvalues_to_file = false;
@@ -316,7 +317,7 @@ int main() {
 
 					if (game.score > game.highscore) {
 						game.highscore = game.score;
-						cout << "Iteration: " << iteration << ", Score: " << to_string(game.score) << ", HighScore: " << to_string(game.highscore) << endl;
+						//cout << "Iteration: " << iteration << ", Score: " << to_string(game.score) << ", HighScore: " << to_string(game.highscore) << endl;
 					}
 					break;
 				}
