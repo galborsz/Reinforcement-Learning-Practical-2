@@ -149,6 +149,7 @@ int main() {
 	int iteration_limit = 10000;
 	int number_of_experiments = 3;
 	double rate_of_decay = 0.01; 
+	cout << "Rate of decay: " << rate_of_decay << endl;
 	bool disp = false;
 	bool run_from_file = false;
 	bool save_qvalues_to_file = false;

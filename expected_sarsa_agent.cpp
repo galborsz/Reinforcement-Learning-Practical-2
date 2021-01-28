@@ -78,17 +78,17 @@ void expected_sarsa_agent::update(int xdif, int ydif, int velocity, double rewar
     double meanQ = 0;
     for (int a=0; a<N_ACTIONS; a++){
         if (a == greedy_act) {
-            if (p_exploration_strategy == "greedy"){
-                meanQ += 1 * Q_TABLE[next_state][next_action];
-            } else {
+            if (p_exploration_strategy == "egreedy"){
                 meanQ += (EPSILON/N_ACTIONS + 1 - EPSILON) * Q_TABLE[next_state][next_action];
+            } else {
+                meanQ += 1 * Q_TABLE[next_state][next_action];
             }
         } else {
-            if (p_exploration_strategy == "greedy"){
-                meanQ += 0;
-            } else {
+            if (p_exploration_strategy == "egreedy"){
                 meanQ += (EPSILON/N_ACTIONS) * Q_TABLE[next_state][next_action];
-            } 
+            } else {
+                meanQ += 0;
+            }
         }
     }
 
