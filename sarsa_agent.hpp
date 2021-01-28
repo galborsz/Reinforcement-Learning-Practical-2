@@ -2,29 +2,17 @@
 #define __MY_SARSA_AGENT_H__
 
 #include <iostream>
-#include <unordered_map>
 #include "agent.hpp"
 
 
 using namespace std;
 
 class sarsa_agent: public agent {
-    private:
-        static constexpr double GAMMA = 1;
-        static constexpr double ALPHA = 0.7;
-        string last_state;
-        int last_action;
-        string next_state;
-        int next_action;
-        unordered_map<string, unordered_map<int, double> > Q_TABLE;
-        int greedy_action(string state);
-        int e_greedy_policy(string state);
-
     public:
-        sarsa_agent();
+        sarsa_agent(string exploration_strategy);
         void set_epsilon(int iteration);
         int act();
-        void update(int xdif, int ydif, int velocity, double reward,  bool dead, bool greedy);
+        void update(int xdif, int ydif, int velocity, double reward);
 };
 
 #endif /* SARSA_AGENT */

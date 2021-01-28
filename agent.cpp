@@ -1,13 +1,15 @@
 #include <iostream>
 #include <iomanip>
 #include <fstream>
+#include <unordered_map>
 #include "agent.hpp"
 
 using namespace std;
 
-agent::agent() {
-    state_count = 0;
-    EPSILON = 1;
+agent::agent(string exploration_strategy) {
+    EPSILON = 1; //initial epsilon always 1
+    t = 0; //total number of actions
+    p_exploration_strategy = exploration_strategy; 
 }
 
 int agent::act() {
@@ -15,7 +17,7 @@ int agent::act() {
     return 0;
 }
 
-void agent::update(int xdif, int ydif, int velocity, double reward, bool dead, bool greedy) {
+void agent::update(int xdif, int ydif, int velocity, double reward) {
     cout << "failed update, implement for agent" << endl;
 }
 
@@ -37,8 +39,6 @@ string agent::create_state(int xdif, int ydif, int velocity) {
     string state = to_string(xdif) + "_" + to_string(ydif) + "_" + to_string(velocity);
     return state;
 }
-
-void agent::print_state_count(){std::cout << "state_count: "<< state_count << '\n';}
 
 void agent::save_qvalues_to_file() {cout << "qvalues save failed, not implemented for this agent" << endl;}
 

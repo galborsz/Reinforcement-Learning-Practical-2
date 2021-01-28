@@ -16,7 +16,7 @@
 #include "qlearning_agent.hpp"
 #include "agent.hpp"
 #include "sarsa_agent.hpp"
-#include "double_qlearning_agent.hpp"
+//#include "double_qlearning_agent.hpp"
 #include "expected_sarsa_agent.hpp"
 
 using namespace sf;
@@ -144,14 +144,15 @@ float divide(float a) {
 int main() {
 
 	//experiment parameters
-	int agent_type = 1; // 1 = qlearning, 2 = sarsa, 3 = double qlearning, 4 = expected sarsa
-	int iteration_limit = 10000;
-	int number_of_experiments = 10;
-	double rate_of_decay = 0.01; //highly dependate on iteration limit
+	int agent_type = 3; // 1 = qlearning, 2 = sarsa, 3 = expected sarsa, 4 = double qlearning
+	string exploration_strategy = "ucb"; // "greedy", "egreedy", "ucb"
+	int iteration_limit = 15000;
+	int number_of_experiments = 1;
+	double rate_of_decay = 0.01; 
 	bool disp = false;
-	bool eligibility_traces = false;
 	bool run_from_file = false;
-	bool greedy = false;
+	bool save_qvalues_to_file = false;
+
 	vector<int> highscores;
 	vector<float> sum_total_score (iteration_limit, 0);
 	string exploration = to_string(rate_of_decay);
@@ -230,25 +231,27 @@ int main() {
 		//INITIALIZE LEARNING BOT
 		switch(agent_type) {
 			case 1: 
-				agent1 = new qlearning_agent(eligibility_traces);
+				agent1 = new qlearning_agent(exploration_strategy);
 				cout<<"Q-Learning agent"<<endl;
 				agent_name = "qlearning";
 				break;
 			case 2:
-				agent1 = new sarsa_agent();
+				agent1 = new sarsa_agent(exploration_strategy);
 				cout<<"Sarsa agent"<<endl;
 				agent_name = "sarsa";
 				break;
 			case 3: 
-				agent1 = new double_qlearning_agent();
-				cout<<"Double Q-Learning agent"<<endl;
-				agent_name = "double_learning";
-				break;
-			case 4: 
-				agent1 = new expected_sarsa_agent();
+				agent1 = new expected_sarsa_agent(exploration_strategy);
 				cout<<"Expected sarsa agent"<<endl;
 				agent_name = "expected_sarsa";
 				break;
+			case 4: 
+				cout << "double q elarning does not work" << endl;
+				/*
+				agent1 = new double_qlearning_agent();
+				cout<<"Double Q-Learning agent"<<endl;
+				agent_name = "double_qlearning";
+				break; */
 			default: 
 				cout << "Invalid agent type code";
 		}
@@ -280,7 +283,7 @@ int main() {
 				game.score = 0;
 				pipes.clear();
 				iteration++;
-				agent1->set_epsilon(iteration, rate_of_decay);
+				if (exploration_strategy == "egreedy") agent1->set_epsilon(iteration, rate_of_decay);
 				double percentage = ((double)iteration/(double)iteration_limit);
 				printProgress(percentage);
 			}
@@ -313,7 +316,7 @@ int main() {
 
 					if (game.score > game.highscore) {
 						game.highscore = game.score;
-						//cout << "Iteration: " << iteration << ", Score: " << to_string(game.score) << ", HighScore: " << to_string(game.highscore) << endl;
+						cout << "Iteration: " << iteration << ", Score: " << to_string(game.score) << ", HighScore: " << to_string(game.highscore) << endl;
 					}
 					break;
 				}
@@ -430,7 +433,7 @@ int main() {
 			calculate_state_xy(xdif, ydif);
 
 			//update qlearning_agent
-			agent1->update(xdif, ydif, flappy.v, reward, (game.gameState == gameover) ? true : false, greedy);
+			agent1->update(xdif, ydif, flappy.v, reward);
 
 			// events
 			Event event;
@@ -481,10 +484,9 @@ int main() {
 		}
 
 		highscores.push_back(game.highscore);
-		cout << "Highscore: " << game.highscore << endl;
+		cout << "\nHighscore: " << game.highscore << endl;
 
-		//agent1->print_state_count();
-		agent1->save_qvalues_to_file();
+		if (save_qvalues_to_file) agent1->save_qvalues_to_file();
 		std::transform (sum_total_score.begin(), sum_total_score.end(), total_score.begin(), sum_total_score.begin(), std::plus<float>());
 		delete agent1;
 	}
