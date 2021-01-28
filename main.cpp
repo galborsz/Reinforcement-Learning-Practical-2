@@ -138,16 +138,16 @@ void save_avg_total_score_to_file(vector<float> data, string fileName){
 }
 
 float divide(float a) {
-    return a/10;
+    return a/3;
 }
 
 int main() {
 
 	//experiment parameters
-	int agent_type = 3; // 1 = qlearning, 2 = sarsa, 3 = expected sarsa, 4 = double qlearning
-	string exploration_strategy = "ucb"; // "greedy", "egreedy", "ucb"
-	int iteration_limit = 15000;
-	int number_of_experiments = 1;
+	int agent_type = 1; // 1 = qlearning, 2 = sarsa, 3 = expected sarsa, 4 = double qlearning
+	string exploration_strategy = "greedy"; // "greedy", "egreedy", "ucb"
+	int iteration_limit = 10000;
+	int number_of_experiments = 3;
 	double rate_of_decay = 0.01; 
 	bool disp = false;
 	bool run_from_file = false;
@@ -316,7 +316,7 @@ int main() {
 
 					if (game.score > game.highscore) {
 						game.highscore = game.score;
-						cout << "Iteration: " << iteration << ", Score: " << to_string(game.score) << ", HighScore: " << to_string(game.highscore) << endl;
+						//cout << "Iteration: " << iteration << ", Score: " << to_string(game.score) << ", HighScore: " << to_string(game.highscore) << endl;
 					}
 					break;
 				}

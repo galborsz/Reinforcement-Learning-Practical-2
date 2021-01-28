@@ -42,7 +42,7 @@ void qlearning_agent::update(int xdif, int ydif, int velocity, double reward) {
         greedy_act = 1;
     }
 
-    if (p_exploration_strategy == "greedy") {
+    if (p_exploration_strategy == "greedy") { 
         next_action = greedy_act;
     } else if (p_exploration_strategy == "egreedy") { //epsilon greedy
         double random = (double)rand() / RAND_MAX;

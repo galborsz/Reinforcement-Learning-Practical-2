@@ -1,7 +1,7 @@
 import matplotlib.pyplot as plt
 import sys
 
-iterations = 13000
+iterations = 10000
 
 #Get input
 algorithm = input("Choose algorithm: qlearning, sarsa, expected_sarsa, double_qlearning\n")
