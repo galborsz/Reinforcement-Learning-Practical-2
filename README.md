@@ -10,9 +10,9 @@ In order to compile and start the program, follow these simple steps:
 - `./a.out`
 ## How the results can be seen
 1) Open the terminal and navigate to the folder with all the code
-2) Run the python files for generating the plots with the following commands:
-```python3 plot_egreedy.py```
-```python3 plot_ucb.py```
+2) Run the python files for generating the plots with the following commands:<br>
+```python3 plot_egreedy.py```<br>
+```python3 plot_ucb.py```<br>
 ## Parameters
 In the main.cpp file, we can find the experiment parameters to be chosen by the person running the code. <br>
 -```agent_type```: reinforcement learning algorithms being used, i.e. 1 = qlearning, 2 = sarsa, 3 = expected sarsa, 4 = double qlearning<br>
