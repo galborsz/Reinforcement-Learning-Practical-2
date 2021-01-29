@@ -2,7 +2,7 @@
 ![screenshot](https://denizbasgoren.github.io/sfml-flappy-bird/screenshots/s2.png)
 ## How to compile and start the program
 In order to compile and start the program, follow these simple steps:
-1) Make sure that you have SMFL 2+ installed
+1) Make sure that you have SMFL 2+ installed, which you can find in https://www.sfml-dev.org/download/sfml/2.5.1/
 - Windows: https://www.youtube.com/watch?v=GE-4hJDlmeA
 - OSX: https://www.youtube.com/watch?v=mtEiyDbYMxQ
 2) Navigate to the folder with all the code
