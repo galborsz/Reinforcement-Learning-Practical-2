@@ -11,11 +11,11 @@ In order to compile and start the program, follow these simple steps:
 - `./a.out`
 ## How the results can be seen
 ## Parameters
-In the main.cpp file, we can find the experiment parameters to be chosen by the person running the code. 
--agent_type: reinforcement learning algorithms being used, i.e. 1 = qlearning, 2 = sarsa, 3 = expected sarsa, 4 = double qlearning
--exploration_strategy: exploration startegy being used, i.e. "greedy", "egreedy", "ucb"
--iteration_limit: number of iterations the code will run for
--number_of_experiments: number of times the experiment will be repeated. The score results will be averaged and saved as a .txt file
--rate_of_decay: rate of decay for the Decaying epsilon-greedy algorithm
+In the main.cpp file, we can find the experiment parameters to be chosen by the person running the code. <br>
+-```agent_type```: reinforcement learning algorithms being used, i.e. 1 = qlearning, 2 = sarsa, 3 = expected sarsa, 4 = double qlearning<br>
+-```exploration_strategy```: exploration startegy being used, i.e. "greedy", "egreedy", "ucb"<br>
+-```iteration_limit```: number of iterations the code will run for<br>
+-```number_of_experiments```: number of times the experiment will be repeated. The score results will be averaged and saved as a .txt file<br>
+-```rate_of_decay```: rate of decay for the Decaying epsilon-greedy algorithm<br>
 Morever, the learning parameters for each of the algorihtm can be found in their respective file, for example sarsa_agent.cpp. These learning parameters can also be tuned by the person running the code, although the tuned values are set as default
 
