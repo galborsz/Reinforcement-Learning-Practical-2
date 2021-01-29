@@ -9,11 +9,13 @@ qlearning_agent::qlearning_agent(string exploration_strategy) : agent(exploratio
     next_action = 1;
 
     //learning parameters
-    LAMBDA = 0.5;
-    GAMMA = 1;
-    ALPHA = 0.7;
+    GAMMA = 0.95;
+    ALPHA = 0.8;
+
+
     //UCB parameter
-    c = 1.5;
+    c = 0.5;
+
 }
 
 int qlearning_agent::act() {

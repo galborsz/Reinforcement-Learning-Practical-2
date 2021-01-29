@@ -8,7 +8,6 @@ sarsa_agent::sarsa_agent(string exploration_strategy): agent(exploration_strateg
     srand(time(NULL));
 
     //learning parameters
-    LAMBDA = 0.5;
     GAMMA = 1;
     ALPHA = 0.7;
     //UCB parameter

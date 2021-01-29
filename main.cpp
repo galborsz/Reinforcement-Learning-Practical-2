@@ -16,7 +16,6 @@
 #include "qlearning_agent.hpp"
 #include "agent.hpp"
 #include "sarsa_agent.hpp"
-//#include "double_qlearning_agent.hpp"
 #include "expected_sarsa_agent.hpp"
 
 using namespace sf;
@@ -107,8 +106,6 @@ bool collides(float x1, float y1, float w1, float h1, float x2, float y2, float 
 
 	float hpipe, xpipe, ypipe;
 	if (pipes.empty()){
-		//xdif = 10000;
-		//ydif = 10000;
 		cout << "pipes is empty" << endl;
 		return;
 	}
@@ -137,24 +134,26 @@ void save_avg_total_score_to_file(vector<float> data, string fileName){
     MyFile.close();
 }
 
-float divide(float a) {
-    return a/3;
+float divide(float a) { // should divide by the number of experiments
+    return a/5;
 }
 
 int main() {
 
 	//experiment parameters
 	int agent_type = 1; // 1 = qlearning, 2 = sarsa, 3 = expected sarsa, 4 = double qlearning
-	string exploration_strategy = "greedy"; // "greedy", "egreedy", "ucb"
-	int iteration_limit = 10000;
-	int number_of_experiments = 3;
-	double rate_of_decay = 0.01; 
+	string exploration_strategy = "egreedy"; // "greedy", "egreedy", "ucb"
+	int iteration_limit = 11000;
+	int number_of_experiments = 5;
+	double rate_of_decay = 0.03; 
 	cout << "Rate of decay: " << rate_of_decay << endl;
 	bool disp = false;
 	bool run_from_file = false;
 	bool save_qvalues_to_file = false;
+	string data_filename = "avg_total_score_experiment_1.txt";
 
-	vector<int> highscores;
+
+	vector<float> highscores;
 	vector<float> sum_total_score (iteration_limit, 0);
 	string exploration = to_string(rate_of_decay);
 	string agent_name;
@@ -233,7 +232,7 @@ int main() {
 		switch(agent_type) {
 			case 1: 
 				agent1 = new qlearning_agent(exploration_strategy);
-				cout<<"Q-Learning agent"<<endl;
+				cout<<"Qlearning agent"<<endl;
 				agent_name = "qlearning";
 				break;
 			case 2:
@@ -248,6 +247,7 @@ int main() {
 				break;
 			case 4: 
 				cout << "double q elarning does not work" << endl;
+				break;
 				/*
 				agent1 = new double_qlearning_agent();
 				cout<<"Double Q-Learning agent"<<endl;
@@ -256,6 +256,7 @@ int main() {
 			default: 
 				cout << "Invalid agent type code";
 		}
+		cout << exploration_strategy << endl;
 
 
 		if (run_from_file) {
@@ -270,7 +271,7 @@ int main() {
 			if (game.gameState == started) {
 				if (agent1->act()) {
 					flappy.v = -8;
-					//sounds.hop.play();
+					if (disp) sounds.hop.play();
 				}
 				flappy.sprite.move(0, flappy.v);
 				flappy.v += 0.5;
@@ -280,7 +281,7 @@ int main() {
 				total_score[iteration] = game.score;
 				game.gameState = started;
 				flappy.sprite.setPosition(250, 300);
-				game.frames = 0; //EDIT
+				game.frames = 0; 
 				game.score = 0;
 				pipes.clear();
 				iteration++;
@@ -313,7 +314,7 @@ int main() {
 			for (vector<Sprite>::iterator itr = pipes.begin(); itr != pipes.end(); itr++) {
 				if (game.gameState == started && (*itr).getPosition().x == 250) {
 					game.score++;
-					//sounds.ching.play();
+					if (disp) sounds.ching.play();
 
 					if (game.score > game.highscore) {
 						game.highscore = game.score;
@@ -382,11 +383,10 @@ int main() {
 				if (fy < 0) {
 					flappy.sprite.setPosition(250, 0);
 					flappy.v = 0;
-					//game.gameState = gameover; //EDIT
 				} else if (fy > 600) {
 					flappy.v = 0;
 					game.gameState = gameover;
-					//sounds.dishk.play();
+					if (disp) sounds.dishk.play();
 				}
 			}
 
@@ -414,9 +414,9 @@ int main() {
 						py = (*itr).getPosition().y - ph;
 					}
 
-					if (collides(fx, fy, fw, fh, px, py, pw, ph)) { //EDIT
+					if (collides(fx, fy, fw, fh, px, py, pw, ph)) { 
 						game.gameState = gameover;
-						//sounds.dishk.play();
+						if (disp) sounds.dishk.play();
 
 					}
 				}
@@ -489,14 +489,21 @@ int main() {
 
 		if (save_qvalues_to_file) agent1->save_qvalues_to_file();
 		std::transform (sum_total_score.begin(), sum_total_score.end(), total_score.begin(), sum_total_score.begin(), std::plus<float>());
+
 		delete agent1;
+		window.close();
+
+
 	}
 	vector<float> avg_total_score(iteration_limit, 0);
 	std::transform(sum_total_score.begin(), sum_total_score.end(), avg_total_score.begin(), divide);
-	//std::for_each(sum_total_score.begin(), sum_total_score.end(), divide);
-	save_avg_total_score_to_file(sum_total_score, "avg_total_score_" + agent_name + "_" + exploration + ".txt");
-
-	int average_highscore = accumulate( highscores.begin(), highscores.end(), 0.0)/highscores.size(); 
+	save_avg_total_score_to_file(sum_total_score, data_filename);
+	float average_highscore = accumulate( highscores.begin(), highscores.end(), 0.0)/highscores.size();
+	float sq_sum = inner_product(highscores.begin(), highscores.end(), highscores.begin(), 0.0);
+	float std_average_highscore = sqrt(sq_sum / number_of_experiments -  average_highscore *  average_highscore); 
 	cout << "average highscore:" << average_highscore << endl;
+	cout << "std_average_highscore:" << std_average_highscore << endl;
+
+
 	return 0;
 }

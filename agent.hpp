@@ -11,7 +11,6 @@ using namespace std;
 class agent { 
     protected:
         static constexpr int N_ACTIONS = 2;
-        double LAMBDA;
         double GAMMA;
         double ALPHA;
         double EPSILON;
