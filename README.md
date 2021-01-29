@@ -17,5 +17,5 @@ In the main.cpp file, we can find the experiment parameters to be chosen by the 
 -```iteration_limit```: number of iterations the code will run for<br>
 -```number_of_experiments```: number of times the experiment will be repeated. The score results will be averaged and saved as a .txt file<br>
 -```rate_of_decay```: rate of decay for the Decaying epsilon-greedy algorithm<br>
-Morever, the learning parameters for each of the algorihtm can be found in their respective file, for example sarsa_agent.cpp. These learning parameters can also be tuned by the person running the code, although the tuned values are set as default
+Morever, the learning parameters for each of the algorithms and exploration methods can be found in their respective file, for example sarsa_agent.cpp. These learning parameters can also be tuned by the person running the code, although the values with which we obtained optimal results are set as default
 
