@@ -13,6 +13,7 @@ In order to compile and start the program, follow these simple steps:
 2) Run the python files for generating the plots with the following commands:<br>
 For generating the plots with the RL algorithms using e-greedy as exploration method: ```python3 plot_egreedy.py```<br>
 For generating the plots with the RL algorithms using UCB as exploration method: ```python3 plot_ucb.py```<br>
+For generating the plots with the RL algorithms without using any exploration method: ```python3 plot_greedy.py```<br>
 ## Parameters
 In the main.cpp file, we can find the experiment parameters to be chosen by the person running the code. <br>
 -```agent_type```: reinforcement learning algorithms being used, i.e. 1 = qlearning, 2 = sarsa, 3 = expected sarsa, 4 = double qlearning<br>
