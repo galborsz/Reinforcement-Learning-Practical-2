@@ -1,6 +1,8 @@
 #include <iostream>
 #include <stdlib.h>
 #include <fstream>
+#include <string>
+
 #include "expected_sarsa_agent.hpp"
 
 expected_sarsa_agent::expected_sarsa_agent(string exploration_strategy): agent(exploration_strategy) {

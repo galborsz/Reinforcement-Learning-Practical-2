@@ -1,5 +1,7 @@
 #include <iostream>
 #include <stdlib.h>
+#include <string>
+
 #include "sarsa_agent.hpp"
 
 sarsa_agent::sarsa_agent(string exploration_strategy): agent(exploration_strategy) {

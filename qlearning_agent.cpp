@@ -1,6 +1,8 @@
 #include <iostream>
 #include <stdlib.h>
 #include <fstream>
+#include <string>
+
 #include "qlearning_agent.hpp"
 
 qlearning_agent::qlearning_agent(string exploration_strategy) : agent(exploration_strategy) {

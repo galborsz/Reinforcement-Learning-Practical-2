@@ -12,6 +12,7 @@
 #include <fstream>
 #include <numeric>  
 #include <algorithm>
+#include <string>
 
 #include "qlearning_agent.hpp"
 #include "agent.hpp"
