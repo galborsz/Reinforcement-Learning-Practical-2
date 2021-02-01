@@ -8,10 +8,10 @@ sarsa_agent::sarsa_agent(string exploration_strategy): agent(exploration_strateg
     srand(time(NULL));
 
     //learning parameters
-    GAMMA = 1;
+    GAMMA = 0.95;
     ALPHA = 0.7;
     //UCB parameter
-    c = 1.5;
+    c = 0.5;
 }
 
 int sarsa_agent::act() {

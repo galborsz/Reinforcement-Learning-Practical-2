@@ -142,15 +142,15 @@ int main() {
 
 	//experiment parameters
 	int agent_type = 1; // 1 = qlearning, 2 = sarsa, 3 = expected sarsa
-	string exploration_strategy = "ucb"; // "greedy", "egreedy", "ucb"
+	string exploration_strategy = "egreedy"; // "greedy", "egreedy", "ucb"
 	int iteration_limit = 10000;
 	int number_of_experiments = 10;
-	double rate_of_decay = 0.9; 
+	double rate_of_decay = 0.01; 
 	cout << "Rate of decay: " << rate_of_decay << endl;
 	bool disp = false;
 	bool run_from_file = false;
 	bool save_qvalues_to_file = false;
-	string data_filename = "avg_total_score_ucb_qlearning.txt";
+	string data_filename = "avg_total_score_egreedy_qlearning.txt";
 
 
 	vector<float> highscores;

@@ -9,10 +9,10 @@ expected_sarsa_agent::expected_sarsa_agent(string exploration_strategy): agent(e
     next_action = 1;
 
     //learning parameters
-    GAMMA = 1;
+    GAMMA = 0.95;
     ALPHA = 0.7;
     //UCB parameter
-    c = 1.5;
+    c = 0.5;
 }
 
 int expected_sarsa_agent::act() {
