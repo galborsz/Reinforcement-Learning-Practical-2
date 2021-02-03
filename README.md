@@ -10,7 +10,7 @@ In order to compile and start the program, follow these simple steps:
 - `./a.out`
 ## How the results can be seen
 1) Open the terminal and navigate to the folder with all the code
-2) Run the main program in order to generate the .txt files with the data needed for creating the plots (change the name with which the file will be saved accordingly -line 154 main.cpp)
+2) If you want to generate your own data, run the main program, which will generate a .txt file with the data needed for creating the plots (change the name with which the file will be saved accordingly -line 154 main.cpp). If you want to generate the plots that can be found in the report, skip this step
 3) Run the python files for generating the plots with the following commands:<br>
 For generating the plots with the RL algorithms using e-greedy as exploration method: ```python3 plot_egreedy.py```<br>
 For generating the plots with the RL algorithms using UCB as exploration method: ```python3 plot_ucb.py```<br>
