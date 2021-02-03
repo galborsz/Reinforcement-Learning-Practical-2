@@ -39,11 +39,3 @@ string agent::create_state(int xdif, int ydif, int velocity) {
     string state = to_string(xdif) + "_" + to_string(ydif) + "_" + to_string(velocity);
     return state;
 }
-
-void agent::save_qvalues_to_file() {cout << "qvalues save failed, not implemented for this agent" << endl;}
-
-void agent::load_qtables_from_file(string filename) {cout << "load failed, not implemented for this agent" << endl;}
-
-
-
-

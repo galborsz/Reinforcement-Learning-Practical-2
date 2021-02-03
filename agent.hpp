@@ -31,8 +31,6 @@ class agent {
         virtual void update(int xdif, int ydif, int velocity, double reward);
         void set_epsilon(int iteration, double rate_of_decay);
         string create_state(int xdif, int ydif, int velocity);
-        virtual void save_qvalues_to_file();
-        virtual void load_qtables_from_file(string filename);
 };
 
 #endif /* MY_AGENT_H */

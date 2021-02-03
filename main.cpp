@@ -149,8 +149,6 @@ int main() {
 	double rate_of_decay = 0.9; 
 	cout << "Rate of decay: " << rate_of_decay << endl;
 	bool disp = false;
-	bool run_from_file = false;
-	bool save_qvalues_to_file = false;
 	string data_filename = "avg_total_score_egreedy_qlearning.txt";
 
 
@@ -250,11 +248,6 @@ int main() {
 				cout << "Invalid agent type code";
 		}
 		cout << exploration_strategy << endl;
-
-
-		if (run_from_file) {
-			agent1->load_qtables_from_file("qvalues");
-		}
 
 
 		// main loop
@@ -478,7 +471,6 @@ int main() {
 		highscores.push_back(game.highscore);
 		cout << "\nHighscore: " << game.highscore << endl;
 
-		if (save_qvalues_to_file) agent1->save_qvalues_to_file();
 		std::transform (sum_total_score.begin(), sum_total_score.end(), total_score.begin(), sum_total_score.begin(), std::plus<float>());
 
 		delete agent1;
