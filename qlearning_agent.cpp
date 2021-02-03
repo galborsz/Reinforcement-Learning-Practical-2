@@ -14,7 +14,6 @@ qlearning_agent::qlearning_agent(string exploration_strategy) : agent(exploratio
     GAMMA = 0.95;
     ALPHA = 0.8;
 
-
     //UCB parameter
     c = 0.5;
 

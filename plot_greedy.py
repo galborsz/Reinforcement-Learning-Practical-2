@@ -21,7 +21,6 @@ plt.scatter(x,y3, s=0.5, label="Q-Learning")
 plt.xlabel("Iteration")
 plt.ylabel("Score")
 plt.title("Average score for RL algorithms without exploration method")
-#plt.legend(scatterpoints=1, fontsize=10)
 lgnd = plt.legend(loc="top left", numpoints=1, fontsize=10)
 
 #change the marker size manually for both lines

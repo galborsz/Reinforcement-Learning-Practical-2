@@ -110,7 +110,7 @@ bool collides(float x1, float y1, float w1, float h1, float x2, float y2, float 
 		cout << "pipes is empty" << endl;
 		return;
 	}
-	//std::cout << "/* cal */" << '\n';
+
 	for (vector<Sprite>::iterator itr = pipes.begin(); itr != pipes.end(); itr++) {
 		ypipe = (*itr).getPosition().y;
 		xpipe = (*itr).getPosition().x + 52 * (*itr).getScale().x; //EDIT
@@ -142,7 +142,7 @@ float divide(float a) { // should divide by the number of experiments
 int main() {
 
 	//experiment parameters
-	int agent_type = 3; // 1 = qlearning, 2 = sarsa, 3 = expected sarsa
+	int agent_type = 1; // 1 = qlearning, 2 = sarsa, 3 = expected sarsa
 	string exploration_strategy = "egreedy"; // "greedy", "egreedy", "ucb"
 	int iteration_limit = 10000;
 	int number_of_experiments = 10;
@@ -151,7 +151,7 @@ int main() {
 	bool disp = false;
 	bool run_from_file = false;
 	bool save_qvalues_to_file = false;
-	string data_filename = "avg_total_score_egreedy_expected_sarsa.txt";
+	string data_filename = "avg_total_score_egreedy_qlearning.txt";
 
 
 	vector<float> highscores;
@@ -246,14 +246,6 @@ int main() {
 				cout<<"Expected sarsa agent"<<endl;
 				agent_name = "expected_sarsa";
 				break;
-			case 4: 
-				cout << "double q elarning does not work" << endl;
-				break;
-				/*
-				agent1 = new double_qlearning_agent();
-				cout<<"Double Q-Learning agent"<<endl;
-				agent_name = "double_qlearning";
-				break; */
 			default: 
 				cout << "Invalid agent type code";
 		}
@@ -266,7 +258,7 @@ int main() {
 
 
 		// main loop
-		while (iteration != iteration_limit) { //window.isOpen()
+		while (iteration != iteration_limit) {
 
 			//move flappy according to agent policy
 			if (game.gameState == started) {
@@ -319,16 +311,14 @@ int main() {
 
 					if (game.score > game.highscore) {
 						game.highscore = game.score;
-						//cout << "Iteration: " << iteration << ", Score: " << to_string(game.score) << ", HighScore: " << to_string(game.highscore) << endl;
 					}
 					break;
 				}
 			}
 
 			// generate pipes
-			if (game.gameState == started && game.frames % 150 == 0) { //EDIT so that pipes generate right away
+			if (game.gameState == started && game.frames % 150 == 0) { 
 				int r = rand() % 275 + 75;
-				//r = 300;
 				int gap = 150;
 
 				// lower pipe
@@ -423,7 +413,7 @@ int main() {
 				}
 			}
 
-			// gameover. restarts game immediately //EDIT
+			// gameover. restarts game immediately
 			//Observe R after taking action A
 			if (game.gameState == gameover) {
 				reward = -1000;
