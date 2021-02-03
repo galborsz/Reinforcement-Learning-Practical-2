@@ -10,7 +10,8 @@ In order to compile and start the program, follow these simple steps:
 - `./a.out`
 ## How the results can be seen
 1) Open the terminal and navigate to the folder with all the code
-2) Run the python files for generating the plots with the following commands:<br>
+2) Run the main program in order to generate the .txt files with the data needed for creating the plots
+3) Run the python files for generating the plots with the following commands:<br>
 For generating the plots with the RL algorithms using e-greedy as exploration method: ```python3 plot_egreedy.py```<br>
 For generating the plots with the RL algorithms using UCB as exploration method: ```python3 plot_ucb.py```<br>
 For generating the plots with the RL algorithms without using any exploration method: ```python3 plot_greedy.py```<br>
