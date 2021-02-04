@@ -12,7 +12,7 @@ expected_sarsa_agent::expected_sarsa_agent(string exploration_strategy): agent(e
 
     //learning parameters
     GAMMA = 0.95;
-    ALPHA = 0.7;
+    ALPHA = 0.5;
     //UCB parameter
     c = 0.5;
 }
@@ -25,14 +25,15 @@ int expected_sarsa_agent::act() {
         ACTION_COUNTS[last_state][last_action]++;  
         t++;
     }
-    return next_action;
+    return last_action;
 }
 
 
 void expected_sarsa_agent::update(int xdif, int ydif, int velocity, double reward) {
+     //Choose A' from S' using policy derived from Q (e.g. e-greedy)
     next_state = create_state(xdif, ydif, velocity);
     if (next_state == last_state) return;
-
+    
     double QS0 = Q_TABLE[next_state][0];
     double QS1 = Q_TABLE[next_state][1];
 
