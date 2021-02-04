@@ -135,22 +135,22 @@ void save_avg_total_score_to_file(vector<float> data, string fileName){
 }
 
 float divide(float a) { // should divide by the number of experiments
-    return a/5;
+    return a/10;
 }
 
 int main() {
 
 	//experiment parameters
-	int agent_type = 1; // 1 = qlearning, 2 = sarsa, 3 = expected sarsa, 4 = double qlearning
+	int agent_type = 1; // 1 = qlearning, 2 = sarsa, 3 = expected sarsa
 	string exploration_strategy = "egreedy"; // "greedy", "egreedy", "ucb"
-	int iteration_limit = 11000;
-	int number_of_experiments = 5;
-	double rate_of_decay = 0.03; 
+	int iteration_limit = 8000;
+	int number_of_experiments = 10;
+	double rate_of_decay = 0.9; 
 	cout << "Rate of decay: " << rate_of_decay << endl;
 	bool disp = false;
 	bool run_from_file = false;
 	bool save_qvalues_to_file = false;
-	string data_filename = "avg_total_score_experiment_1.txt";
+	string data_filename = "avg_total_score_experiment_6_qlearning_" + exploration_strategy + ".txt";
 
 
 	vector<float> highscores;

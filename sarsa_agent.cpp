@@ -8,10 +8,12 @@ sarsa_agent::sarsa_agent(string exploration_strategy): agent(exploration_strateg
     srand(time(NULL));
 
     //learning parameters
-    GAMMA = 1;
-    ALPHA = 0.7;
+    GAMMA = 0.95;
+    ALPHA = 0.5;
+
+
     //UCB parameter
-    c = 1.5;
+    c = 0.5;
 }
 
 int sarsa_agent::act() {
@@ -70,7 +72,7 @@ void sarsa_agent::update(int xdif, int ydif, int velocity, double reward) {
         }
     } else {
         cout << "Error: invalid exploration strategy" << endl;
-    }
+    } 
 
     double update = ALPHA * (reward + GAMMA * Q_TABLE[next_state][next_action] - Q_TABLE[last_state][last_action]);
 

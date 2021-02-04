@@ -1,26 +1,25 @@
 import matplotlib.pyplot as plt
-import sys
-
-iterations = 10000
-
-#Get input
-algorithm = input("Choose algorithm: qlearning, sarsa, expected_sarsa, double_qlearning\n")
-exploration = input("Choose decay rate for the exploration method:\n")
-
-print("algorithm: ", algorithm)
-print("exploration: ", exploration)
-
-file_name = "avg_total_score_" + algorithm + "_" + exploration + ".txt"
-title = "Learning progress - " + algorithm + " (Decaying epsilon-greedy e=" + exploration + ")"
-
-file1 = open(file_name,"r")
+#Sarsa
+file1 = open("avg_total_score_egreedy_sarsa.txt","r")
 string1 = file1.read().splitlines()
 y = [int(line) for line in string1]
-print("y: ", len(y))
-x = [*range(0, iterations, 1)] 
-print("x: ", len(x))
-plt.scatter(x,y, s=0.5)
+
+#Expected sarsa
+file2 = open("avg_total_score_egreedy_expected_sarsa.txt","r")
+string2 = file2.read().splitlines()
+y2 = [int(line) for line in string2]
+
+#Q-Learning
+file3 = open("avg_total_score_egreedy_qlearning.txt","r")
+string3 = file3.read().splitlines()
+y3 = [int(line) for line in string3]
+
+x = [*range(0, 12500, 1)] 
+plt.scatter(x,y, s=0.5, label="Sarsa")
+plt.scatter(x,y2, s=0.5, label="Expected Sarsa")
+plt.scatter(x,y3, s=0.5, label="Q-Learning")
 plt.xlabel("Iteration")
 plt.ylabel("Score")
-plt.title(title)
+plt.title("UCB")
+plt.legend()
 plt.show()
