@@ -1,16 +1,16 @@
 import matplotlib.pyplot as plt
 #Sarsa
-file1 = open("avg_total_score_ucb_sarsa_final.txt","r")
+file1 = open("avg_total_score_ucb_sarsa.txt","r")
 string1 = file1.read().splitlines()
 y = [int(line) for line in string1]
 
 #Expected sarsa
-file2 = open("avg_total_score_ucb_esarsa_final.txt","r")
+file2 = open("avg_total_score_ucb_expected_sarsa.txt","r")
 string2 = file2.read().splitlines()
 y2 = [int(line) for line in string2]
 
 #Q-Learning
-file3 = open("avg_total_score_ucb_qlearning_final.txt","r")
+file3 = open("avg_total_score_ucb_qlearning.txt","r")
 string3 = file3.read().splitlines()
 y3 = [int(line) for line in string3]
 
