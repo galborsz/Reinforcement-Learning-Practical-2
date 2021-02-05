@@ -22,6 +22,7 @@ In the main.cpp file, we can find the experiment parameters to be chosen by the 
 -```iteration_limit```: number of iterations the code will run for<br>
 -```number_of_experiments```: number of times the experiment will be repeated. The score results will be averaged and saved as a .txt file<br>
 -```rate_of_decay```: rate of decay for the Decaying epsilon-greedy algorithm<br>
+-```data_filename```: name of the .txt file generated where all the data will be stored. The name has to match the algorithm and exploration strategy that is being used. For example, for Expected Sarsa with UCB, the name "avg_total_score_ucb_expected_sarsa.txt" should be used.
 Morever, the learning parameters for each of the algorithms and exploration methods can be found in their respective file, for example sarsa_agent.cpp. These learning parameters can also be tuned by the person running the code
 ## Notes
 If there is any problem with the installation of SMFL, the follwing videos explain the installation process step by step:
