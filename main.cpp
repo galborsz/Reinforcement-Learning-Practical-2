@@ -143,6 +143,7 @@ int main() {
 
 	//experiment parameters
 	int agent_type = 3; // 1 = qlearning, 2 = sarsa, 3 = expected sarsa
+<<<<<<< HEAD
 	string exploration_strategy = "ucb"; // "greedy", "egreedy", "ucb"
 	int iteration_limit = 5000;
 	int number_of_experiments = 20;
@@ -150,6 +151,15 @@ int main() {
 	cout << "Rate of decay: " << rate_of_decay << endl;
 	bool disp = false;
 	string data_filename = "avg_total_score_ucb_esarsa12345.txt";
+=======
+	string exploration_strategy = "egreedy"; // "greedy", "egreedy", "ucb"
+	int iteration_limit = 5000;
+	int number_of_experiments = 10;
+	double rate_of_decay = 0.9; 
+	cout << "Rate of decay: " << rate_of_decay << endl;
+	bool disp = false;
+	string data_filename = "avg_total_score_egreedy_expected_sarsa.txt";
+>>>>>>> 7c253b97af4194d37ad6550ff9d16fe26aadfcd9
 
 
 	vector<float> highscores;

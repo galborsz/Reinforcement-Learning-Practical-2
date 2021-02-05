@@ -2,7 +2,7 @@
 ![screenshot](https://denizbasgoren.github.io/sfml-flappy-bird/screenshots/s2.png)
 ## How to compile and start the program
 In order to compile and start the program, follow these simple steps:
-1) Make sure that you have SMFL 2+ installed, which can be done with the command:
+1) Make sure that you have SMFL 2+ installed. If you are using Linux, the installation can be done with the command:
 ```sudo apt-get install libsfml-dev```
 2) Navigate to the folder with all the code
 3) Excute the following commands:
@@ -22,6 +22,7 @@ In the main.cpp file, we can find the experiment parameters to be chosen by the 
 -```iteration_limit```: number of iterations the code will run for<br>
 -```number_of_experiments```: number of times the experiment will be repeated. The score results will be averaged (divide function must be manually changed) and saved as a .txt data_filename<br>
 -```rate_of_decay```: rate of decay for the Decaying epsilon-greedy algorithm<br>
+-```data_filename```: name of the .txt file generated where all the data will be stored. The name has to match the algorithm and exploration strategy that is being used. For example, for Expected Sarsa with UCB, the name "avg_total_score_ucb_expected_sarsa.txt" should be used.
 Morever, the learning parameters for each of the algorithms and exploration methods can be found in their respective file, for example sarsa_agent.cpp. These learning parameters can also be tuned by the person running the code
 ## Notes
 If there is any problem with the installation of SMFL, the follwing videos explain the installation process step by step:

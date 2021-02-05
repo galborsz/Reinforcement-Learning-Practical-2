@@ -14,7 +14,11 @@ file3 = open("avg_total_score_egreedy_qlearning123.txt","r")
 string3 = file3.read().splitlines()
 y3 = [int(line) for line in string3]
 
+<<<<<<< HEAD
 x = [*range(0, 8000, 1)] 
+=======
+x = [*range(0, 5000, 1)] 
+>>>>>>> 7c253b97af4194d37ad6550ff9d16fe26aadfcd9
 plt.scatter(x,y, s=0.5, label="Sarsa")
 plt.scatter(x,y2, s=0.5, label="Expected Sarsa")
 plt.scatter(x,y3, s=0.5, label="Q-Learning")
