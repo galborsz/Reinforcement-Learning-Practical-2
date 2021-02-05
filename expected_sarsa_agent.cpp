@@ -12,7 +12,7 @@ expected_sarsa_agent::expected_sarsa_agent(string exploration_strategy): agent(e
 
     //learning parameters
     GAMMA = 0.95;
-    ALPHA = 0.5;
+    ALPHA = 0.7;
     //UCB parameter
     c = 0.5;
 }
