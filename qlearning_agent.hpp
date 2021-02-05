@@ -13,8 +13,6 @@ class qlearning_agent: public agent {
         int act();
         void set_epsilon(int iteration);
         void update(int xdif, int ydif, int velocity, double reward);
-        void save_qvalues_to_file();
-        void load_qtables_from_file(string filename);
 };
 
 #endif /* QLEARNING_AGENT */

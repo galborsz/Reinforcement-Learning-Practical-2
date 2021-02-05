@@ -1,5 +1,7 @@
 #include <iostream>
 #include <stdlib.h>
+#include <string>
+
 #include "sarsa_agent.hpp"
 
 sarsa_agent::sarsa_agent(string exploration_strategy): agent(exploration_strategy) {
@@ -10,8 +12,6 @@ sarsa_agent::sarsa_agent(string exploration_strategy): agent(exploration_strateg
     //learning parameters
     GAMMA = 0.95;
     ALPHA = 0.5;
-
-
     //UCB parameter
     c = 0.5;
 }

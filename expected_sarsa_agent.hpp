@@ -12,8 +12,6 @@ class expected_sarsa_agent: public agent {
         expected_sarsa_agent(string exploration_strategy);
         int act();
         void update(int xdif, int ydif, int velocity, double reward);
-        void save_qvalues_to_file();
-        void load_qtables_from_file(string filename);
 };
 
 #endif /* EXPECTED_SARSA_AGENT */

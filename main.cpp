@@ -12,6 +12,7 @@
 #include <fstream>
 #include <numeric>  
 #include <algorithm>
+#include <string>
 
 #include "qlearning_agent.hpp"
 #include "agent.hpp"
@@ -109,7 +110,7 @@ bool collides(float x1, float y1, float w1, float h1, float x2, float y2, float 
 		cout << "pipes is empty" << endl;
 		return;
 	}
-	//std::cout << "/* cal */" << '\n';
+
 	for (vector<Sprite>::iterator itr = pipes.begin(); itr != pipes.end(); itr++) {
 		ypipe = (*itr).getPosition().y;
 		xpipe = (*itr).getPosition().x + 52 * (*itr).getScale().x; //EDIT
@@ -135,22 +136,20 @@ void save_avg_total_score_to_file(vector<float> data, string fileName){
 }
 
 float divide(float a) { // should divide by the number of experiments
-    return a/10;
+    return a/20;
 }
 
 int main() {
 
 	//experiment parameters
-	int agent_type = 1; // 1 = qlearning, 2 = sarsa, 3 = expected sarsa
-	string exploration_strategy = "egreedy"; // "greedy", "egreedy", "ucb"
-	int iteration_limit = 8000;
-	int number_of_experiments = 10;
+	int agent_type = 3; // 1 = qlearning, 2 = sarsa, 3 = expected sarsa
+	string exploration_strategy = "ucb"; // "greedy", "egreedy", "ucb"
+	int iteration_limit = 5000;
+	int number_of_experiments = 20;
 	double rate_of_decay = 0.9; 
 	cout << "Rate of decay: " << rate_of_decay << endl;
 	bool disp = false;
-	bool run_from_file = false;
-	bool save_qvalues_to_file = false;
-	string data_filename = "avg_total_score_experiment_6_qlearning_" + exploration_strategy + ".txt";
+	string data_filename = "avg_total_score_ucb_esarsa12345.txt";
 
 
 	vector<float> highscores;
@@ -245,27 +244,14 @@ int main() {
 				cout<<"Expected sarsa agent"<<endl;
 				agent_name = "expected_sarsa";
 				break;
-			case 4: 
-				cout << "double q elarning does not work" << endl;
-				break;
-				/*
-				agent1 = new double_qlearning_agent();
-				cout<<"Double Q-Learning agent"<<endl;
-				agent_name = "double_qlearning";
-				break; */
 			default: 
 				cout << "Invalid agent type code";
 		}
 		cout << exploration_strategy << endl;
 
 
-		if (run_from_file) {
-			agent1->load_qtables_from_file("qvalues");
-		}
-
-
 		// main loop
-		while (iteration != iteration_limit) { //window.isOpen()
+		while (iteration != iteration_limit) {
 
 			//move flappy according to agent policy
 			if (game.gameState == started) {
@@ -318,16 +304,14 @@ int main() {
 
 					if (game.score > game.highscore) {
 						game.highscore = game.score;
-						//cout << "Iteration: " << iteration << ", Score: " << to_string(game.score) << ", HighScore: " << to_string(game.highscore) << endl;
 					}
 					break;
 				}
 			}
 
 			// generate pipes
-			if (game.gameState == started && game.frames % 150 == 0) { //EDIT so that pipes generate right away
+			if (game.gameState == started && game.frames % 150 == 0) { 
 				int r = rand() % 275 + 75;
-				//r = 300;
 				int gap = 150;
 
 				// lower pipe
@@ -422,12 +406,12 @@ int main() {
 				}
 			}
 
-			// gameover. restarts game immediately //EDIT
+			// gameover. restarts game immediately
 			//Observe R after taking action A
 			if (game.gameState == gameover) {
 				reward = -1000;
 			} else {
-				reward = 0;
+				reward = 1;
 			}
 
 			//calculating xdif and ydif
@@ -487,7 +471,6 @@ int main() {
 		highscores.push_back(game.highscore);
 		cout << "\nHighscore: " << game.highscore << endl;
 
-		if (save_qvalues_to_file) agent1->save_qvalues_to_file();
 		std::transform (sum_total_score.begin(), sum_total_score.end(), total_score.begin(), sum_total_score.begin(), std::plus<float>());
 
 		delete agent1;

@@ -1,6 +1,8 @@
 #include <iostream>
 #include <stdlib.h>
 #include <fstream>
+#include <string>
+
 #include "expected_sarsa_agent.hpp"
 
 expected_sarsa_agent::expected_sarsa_agent(string exploration_strategy): agent(exploration_strategy) {
@@ -10,9 +12,7 @@ expected_sarsa_agent::expected_sarsa_agent(string exploration_strategy): agent(e
 
     //learning parameters
     GAMMA = 0.95;
-    ALPHA = 0.7;
-
-
+    ALPHA = 0.5;
     //UCB parameter
     c = 0.5;
 }
@@ -25,14 +25,15 @@ int expected_sarsa_agent::act() {
         ACTION_COUNTS[last_state][last_action]++;  
         t++;
     }
-    return next_action;
+    return last_action;
 }
 
 
 void expected_sarsa_agent::update(int xdif, int ydif, int velocity, double reward) {
+     //Choose A' from S' using policy derived from Q (e.g. e-greedy)
     next_state = create_state(xdif, ydif, velocity);
     if (next_state == last_state) return;
-
+    
     double QS0 = Q_TABLE[next_state][0];
     double QS1 = Q_TABLE[next_state][1];
 
@@ -98,42 +99,4 @@ void expected_sarsa_agent::update(int xdif, int ydif, int velocity, double rewar
 	// Update Q(S,A)
     Q_TABLE[last_state][last_action] += update;
 
-}
-
-
-void expected_sarsa_agent::save_qvalues_to_file() {
- 	//csv file configuration
-    string filename = "qvalues";
-    ofstream myfile(filename + ".csv");
-
-    myfile << "GAMMA" << GAMMA << "ALPHA" << ALPHA << "EPSILON" << EPSILON << endl;
-
-	for (auto const& x : Q_TABLE) {
-        for (auto const& y : x.second) {
-            myfile << x.first << ':' << y.first << ':' << y.second << endl;
-        }
-	}
-
-	myfile.close();
-
-} 
-
-void expected_sarsa_agent::load_qtables_from_file(string filename) {
-    string line;
-    string delimiter = ":";
-    ifstream myfile (filename + ".csv");
-    if (myfile.is_open()) {
-        while ( getline (myfile, line) ) {
-            size_t pos = 0;
-            pos = line.find(delimiter);
-            string state = line.substr(0, pos);
-            line.erase(0, pos + delimiter.length());
-            pos = line.find(delimiter);
-            int action = atoi((line.substr(0, pos)).c_str());
-            line.erase(0, pos + delimiter.length());
-            double qvalue = atof(line.c_str());
-            Q_TABLE[state][action] = qvalue;
-        }
-        myfile.close();
-    } else cout << "Unable to open file";
 }

@@ -9,14 +9,20 @@ In order to compile and start the program, follow these simple steps:
 - `g++ -std=c++11 *.cpp -lsfml-graphics -lsfml-window -lsfml-system -lsfml-audio`
 - `./a.out`
 ## How the results can be seen
+1) Open the terminal and navigate to the folder with all the code
+2) If you want to generate your own data, run the main program, which will generate a .txt file with the data needed for creating the plots (change the name with which the file will be saved accordingly -line 154 main.cpp). If you want to generate the plots that can be found in the report, skip this step
+3) Run the python files for generating the plots with the following commands:<br>
+For generating the plots with the RL algorithms using e-greedy as exploration method: ```python3 plot_egreedy.py```<br>
+For generating the plots with the RL algorithms using UCB as exploration method: ```python3 plot_ucb.py```<br>
+For generating the plots with the RL algorithms without using any exploration method: ```python3 plot_greedy.py```<br>
 ## Parameters
 In the main.cpp file, we can find the experiment parameters to be chosen by the person running the code. <br>
--```agent_type```: reinforcement learning algorithms being used, i.e. 1 = qlearning, 2 = sarsa, 3 = expected sarsa, 4 = double qlearning<br>
+-```agent_type```: reinforcement learning algorithms being used, i.e. 1 = qlearning, 2 = sarsa, 3 = expected sarsa<br>
 -```exploration_strategy```: exploration startegy being used, i.e. "greedy", "egreedy", "ucb"<br>
 -```iteration_limit```: number of iterations the code will run for<br>
--```number_of_experiments```: number of times the experiment will be repeated. The score results will be averaged and saved as a .txt file<br>
+-```number_of_experiments```: number of times the experiment will be repeated. The score results will be averaged (divide function must be manually changed) and saved as a .txt data_filename<br>
 -```rate_of_decay```: rate of decay for the Decaying epsilon-greedy algorithm<br>
-Morever, the learning parameters for each of the algorithms and exploration methods can be found in their respective file, for example sarsa_agent.cpp. These learning parameters can also be tuned by the person running the code, although the values with which we obtained optimal results are set as default
+Morever, the learning parameters for each of the algorithms and exploration methods can be found in their respective file, for example sarsa_agent.cpp. These learning parameters can also be tuned by the person running the code
 ## Notes
 If there is any problem with the installation of SMFL, the follwing videos explain the installation process step by step:
 - Windows: https://www.youtube.com/watch?v=GE-4hJDlmeA

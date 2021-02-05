@@ -1,6 +1,8 @@
 #include <iostream>
 #include <stdlib.h>
 #include <fstream>
+#include <string>
+
 #include "qlearning_agent.hpp"
 
 qlearning_agent::qlearning_agent(string exploration_strategy) : agent(exploration_strategy) {
@@ -11,7 +13,6 @@ qlearning_agent::qlearning_agent(string exploration_strategy) : agent(exploratio
     //learning parameters
     GAMMA = 0.95;
     ALPHA = 0.5;
-
 
     //UCB parameter
     c = 0.5;
@@ -81,45 +82,3 @@ void qlearning_agent::update(int xdif, int ydif, int velocity, double reward) {
 	// Update Q(S,A)  
     Q_TABLE[last_state][last_action] += update;
 }
-
-
-void qlearning_agent::save_qvalues_to_file() {
- 	//csv file configuration
-    string filename = "qvalues";
-    ofstream myfile(filename + ".csv");
-
-    myfile << "GAMMA" << GAMMA << "ALPHA" << ALPHA << "EPSILON" << EPSILON << endl;
-
-	for (auto const& x : Q_TABLE) {
-        for (auto const& y : x.second) {
-            myfile << x.first << ':' << y.first << ':' << y.second << endl;
-        }
-	}
-
-	myfile.close();
-
-} 
-
-void qlearning_agent::load_qtables_from_file(string filename) {
-    string line;
-    string delimiter = ":";
-    ifstream myfile (filename + ".csv");
-    if (myfile.is_open()) {
-        while ( getline (myfile, line) ) {
-            size_t pos = 0;
-            pos = line.find(delimiter);
-            string state = line.substr(0, pos);
-            line.erase(0, pos + delimiter.length());
-            pos = line.find(delimiter);
-            int action = atoi((line.substr(0, pos)).c_str());
-            line.erase(0, pos + delimiter.length());
-            double qvalue = atof(line.c_str());
-            Q_TABLE[state][action] = qvalue;
-        }
-        myfile.close();
-    } else cout << "Unable to open file";
-}
-
-
-
-
